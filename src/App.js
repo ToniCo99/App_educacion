@@ -1,12 +1,11 @@
-// src/App.js
 import React, { useState } from 'react';
 import SignUp from './components/SignUp';
 import Login from './components/Login';
+import './App.css';
 import { auth, db } from './firebaseConfig';
 import { signOut, deleteUser } from 'firebase/auth';
 import { doc, deleteDoc } from 'firebase/firestore';
 import { FaSignOutAlt, FaTrashAlt } from 'react-icons/fa';
-import './App.css';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -42,6 +41,10 @@ const App = () => {
       {user ? (
         <div>
           <header>
+            <div className="user-info">
+              <p>ID: {user.id}</p>
+              <p className={`role-tag ${user.role.toLowerCase()}`}>{user.role}</p>
+            </div>
             <h1>¡Hola {user.displayName || user.email}!</h1>
             <div className="icon-container">
               <FaSignOutAlt className="icon" onClick={handleSignOut} title="Cerrar sesión" />

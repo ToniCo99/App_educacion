@@ -1,4 +1,3 @@
-// src/components/SignUp.js
 import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
@@ -11,9 +10,14 @@ const SignUp = () => {
   const [role, setRole] = useState('Estudiante');
   const [error, setError] = useState('');
 
+  const generateId = () => {
+    return Math.random().toString(36).substring(2, 9);
+  };
+
   const handleSignUp = async (e) => {
     e.preventDefault();
     setError('');
+    const id = generateId();
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -22,8 +26,9 @@ const SignUp = () => {
         name,
         email,
         role,
+        id,
       });
-      alert('Registration successful! Please verify your email.');
+      alert('Registro exitoso! Por favor verifica tu correo.');
     } catch (error) {
       console.error("Error signing up:", error);
       setError(error.message);
