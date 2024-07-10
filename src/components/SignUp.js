@@ -1,7 +1,9 @@
+// src/components/SignUp.js
 import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import { getErrorMessage } from '../errorMessages';
 
 const SignUp = () => {
   const [name, setName] = useState('');
@@ -30,8 +32,8 @@ const SignUp = () => {
       });
       alert('Registro exitoso! Por favor verifica tu correo.');
     } catch (error) {
-      console.error("Error signing up:", error);
-      setError(error.message);
+      const errorMessage = getErrorMessage(error.code);
+      setError(errorMessage);
     }
   };
 
