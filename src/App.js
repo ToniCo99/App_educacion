@@ -9,6 +9,7 @@ import { FaSignOutAlt, FaTrashAlt } from 'react-icons/fa';
 
 const App = () => {
   const [user, setUser] = useState(null);
+  const [showSignUp, setShowSignUp] = useState(false);
 
   const handleSignOut = () => {
     signOut(auth).then(() => {
@@ -56,9 +57,17 @@ const App = () => {
       ) : (
         <div>
           <h1 className="secondary-color">Bienvenido a la App Educativa</h1>
-          <SignUp />
-          <h1 className="secondary-color">Iniciar Sesión</h1>
-          <Login setUser={setUser} />
+          {!showSignUp ? (
+            <>
+              <Login setUser={setUser} />
+              <button onClick={() => setShowSignUp(true)}>Registrarse</button>
+            </>
+          ) : (
+            <>
+              <SignUp />
+              <button onClick={() => setShowSignUp(false)}>Cancelar</button>
+            </>
+          )}
         </div>
       )}
     </div>
