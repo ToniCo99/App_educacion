@@ -1,12 +1,12 @@
-// src/components/CreateQuiz.js
 import React, { useState } from 'react';
 import { db } from '../firebaseConfig';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 
-const CreateQuiz = ({ user, onBack }) => {
+const CreateQuiz = ({ onBack }) => {
   const [title, setTitle] = useState('');
   const [questions, setQuestions] = useState([{ question: '', options: ['', ''], correctOption: 0 }]);
-  const [error, setError] = useState('');
   const [resultMessages, setResultMessages] = useState({
     lessThan25: '',
     between25And50: '',
@@ -18,152 +18,150 @@ const CreateQuiz = ({ user, onBack }) => {
     setQuestions([...questions, { question: '', options: ['', ''], correctOption: 0 }]);
   };
 
-  const handleAddOption = (index) => {
-    const newQuestions = [...questions];
-    newQuestions[index].options.push('');
-    setQuestions(newQuestions);
-  };
-
-  const handleRemoveOption = (qIndex, oIndex) => {
-    const newQuestions = [...questions];
-    newQuestions[qIndex].options.splice(oIndex, 1);
-    if (newQuestions[qIndex].correctOption === oIndex) {
-      newQuestions[qIndex].correctOption = 0; // Reset correctOption if the removed option was the correct one
+  const handleRemoveQuestion = (index) => {
+    if (questions.length > 1) {
+      setQuestions(questions.filter((_, qIndex) => qIndex !== index));
     }
+  };
+
+  const handleQuestionChange = (index, field, value) => {
+    const newQuestions = questions.slice();
+    newQuestions[index][field] = value;
     setQuestions(newQuestions);
   };
 
-  const handleChangeQuestion = (index, value) => {
-    const newQuestions = [...questions];
-    newQuestions[index].question = value;
-    setQuestions(newQuestions);
-  };
-
-  const handleChangeOption = (qIndex, oIndex, value) => {
-    const newQuestions = [...questions];
+  const handleOptionChange = (qIndex, oIndex, value) => {
+    const newQuestions = questions.slice();
     newQuestions[qIndex].options[oIndex] = value;
     setQuestions(newQuestions);
   };
 
-  const handleChangeCorrectOption = (qIndex, oIndex) => {
-    const newQuestions = [...questions];
+  const handleAddOption = (qIndex) => {
+    const newQuestions = questions.slice();
+    newQuestions[qIndex].options.push('');
+    setQuestions(newQuestions);
+  };
+
+  const handleRemoveOption = (qIndex, oIndex) => {
+    if (questions[qIndex].options.length > 2) {
+      const newQuestions = questions.slice();
+      newQuestions[qIndex].options.splice(oIndex, 1);
+      setQuestions(newQuestions);
+    }
+  };
+
+  const handleCorrectOptionChange = (qIndex, oIndex) => {
+    const newQuestions = questions.slice();
     newQuestions[qIndex].correctOption = oIndex;
     setQuestions(newQuestions);
   };
 
-  const handleChangeResultMessage = (field, value) => {
-    setResultMessages({ ...resultMessages, [field]: value });
-  };
-
-  const generateQuizId = () => {
-    return Math.random().toString(36).substring(2, 12);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    if (!title || questions.some(q => !q.question || q.options.some(o => !o))) {
-      setError('Por favor, completa todos los campos.');
-      return;
-    }
-
-    const quiz = {
-      id: generateQuizId(),
-      creator: user.uid,
-      title,
-      questions,
-      resultMessages,
-      createdAt: new Date(),
-    };
-
+  const handleSubmit = async () => {
     try {
-      await addDoc(collection(db, 'quizzes'), quiz);
-      alert('Cuestionario creado exitosamente');
-      onBack(); // Volver al menú principal después de crear el cuestionario
+      // Crear el documento y obtener el ID generado
+      const docRef = await addDoc(collection(db, 'quizzes'), {
+        title,
+        questions,
+        resultMessages,
+        createdAt: new Date(),
+        creator: 'creator-id-placeholder', // Aquí puedes poner el ID del creador real
+      });
+
+      // Actualizar el documento con el ID generado
+      await updateDoc(doc(db, 'quizzes', docRef.id), { id: docRef.id });
+
+      console.log('Cuestionario creado con ID:', docRef.id);
+      onBack();
     } catch (error) {
-      setError('Error al crear el cuestionario. Por favor, intenta de nuevo.');
-      console.error("Error creating quiz:", error);
+      console.error('Error al crear el cuestionario:', error);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div>
       <h2>Crear Cuestionario</h2>
-      {error && <p className="error">{error}</p>}
-      <input type="text" placeholder="Título del cuestionario" value={title} onChange={(e) => setTitle(e.target.value)} required />
+      <input
+        type="text"
+        placeholder="Título del cuestionario"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
       {questions.map((q, qIndex) => (
-        <div key={qIndex} className="question">
+        <div key={qIndex} style={{ marginBottom: '20px', border: '1px solid #ddd', padding: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h4>Pregunta {qIndex + 1}</h4>
+            {questions.length > 1 && (
+              <button type="button" onClick={() => handleRemoveQuestion(qIndex)} style={{ background: 'none', border: 'none' }}>
+                <FontAwesomeIcon icon={faTrashAlt} size="lg" color="red" />
+              </button>
+            )}
+          </div>
           <input
             type="text"
-            placeholder={`Pregunta ${qIndex + 1}`}
+            placeholder="Pregunta"
             value={q.question}
-            onChange={(e) => handleChangeQuestion(qIndex, e.target.value)}
-            required
+            onChange={(e) => handleQuestionChange(qIndex, 'question', e.target.value)}
           />
           {q.options.map((option, oIndex) => (
-            <div key={oIndex} className="option">
+            <div key={oIndex} style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
               <input
                 type="text"
                 placeholder={`Opción ${oIndex + 1}`}
                 value={option}
-                onChange={(e) => handleChangeOption(qIndex, oIndex, e.target.value)}
-                required
+                onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
+                style={{ marginRight: '10px' }}
               />
               <input
                 type="radio"
                 name={`correctOption${qIndex}`}
                 checked={q.correctOption === oIndex}
-                onChange={() => handleChangeCorrectOption(qIndex, oIndex)}
+                onChange={() => handleCorrectOptionChange(qIndex, oIndex)}
               />
-              Correcta
-              <button 
-                type="button" 
-                onClick={() => handleRemoveOption(qIndex, oIndex)}
-                disabled={q.options.length <= 2}
-              >
-                Eliminar opción
-              </button>
+              {q.options.length > 2 && (
+                <button type="button" onClick={() => handleRemoveOption(qIndex, oIndex)} style={{ background: 'none', border: 'none', marginLeft: '10px' }}>
+                  <FontAwesomeIcon icon={faTrashAlt} size="lg" color="red" />
+                </button>
+              )}
             </div>
           ))}
-          <button type="button" onClick={() => handleAddOption(qIndex)}>Añadir opción</button>
+          <button type="button" onClick={() => handleAddOption(qIndex)} style={{ marginTop: '10px' }}>Añadir Opción</button>
         </div>
       ))}
-      <div className="result-messages">
+      <button type="button" onClick={handleAddQuestion}>Añadir Pregunta</button>
+      <div style={{ marginTop: '20px' }}>
         <h3>Mensajes de Resultado</h3>
         <input
           type="text"
           placeholder="Menos del 25%"
           value={resultMessages.lessThan25}
-          onChange={(e) => handleChangeResultMessage('lessThan25', e.target.value)}
-          required
+          onChange={(e) => setResultMessages({ ...resultMessages, lessThan25: e.target.value })}
+          style={{ display: 'block', marginBottom: '10px' }}
         />
         <input
           type="text"
           placeholder="Entre 25% y 50%"
           value={resultMessages.between25And50}
-          onChange={(e) => handleChangeResultMessage('between25And50', e.target.value)}
-          required
+          onChange={(e) => setResultMessages({ ...resultMessages, between25And50: e.target.value })}
+          style={{ display: 'block', marginBottom: '10px' }}
         />
         <input
           type="text"
           placeholder="Entre 50% y 75%"
           value={resultMessages.between50And75}
-          onChange={(e) => handleChangeResultMessage('between50And75', e.target.value)}
-          required
+          onChange={(e) => setResultMessages({ ...resultMessages, between50And75: e.target.value })}
+          style={{ display: 'block', marginBottom: '10px' }}
         />
         <input
           type="text"
           placeholder="Entre 75% y 100%"
           value={resultMessages.between75And100}
-          onChange={(e) => handleChangeResultMessage('between75And100', e.target.value)}
-          required
+          onChange={(e) => setResultMessages({ ...resultMessages, between75And100: e.target.value })}
+          style={{ display: 'block', marginBottom: '10px' }}
         />
       </div>
-      <button type="button" onClick={handleAddQuestion}>Añadir pregunta</button>
-      <button type="submit">Publicar cuestionario</button>
-      <button type="button" onClick={onBack}>Volver al menú</button>
-    </form>
+      <button type="button" onClick={handleSubmit} style={{ marginTop: '20px' }}>Crear Cuestionario</button>
+      <button type="button" onClick={onBack} style={{ marginTop: '10px' }}>Volver</button>
+    </div>
   );
 };
 

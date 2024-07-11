@@ -7,17 +7,23 @@ import { signOut, deleteUser } from 'firebase/auth';
 import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { FaSignOutAlt, FaTrashAlt } from 'react-icons/fa';
 import CreateQuiz from './components/CreateQuiz';
+import QuizList from './components/QuizList';
+import ResolveQuiz from './components/ResolveQuiz';
 
 const App = () => {
   const [user, setUser] = useState(null);
   const [showSignUp, setShowSignUp] = useState(false);
   const [showCreateQuiz, setShowCreateQuiz] = useState(false);
+  const [showQuizList, setShowQuizList] = useState(false);
+  const [selectedQuizId, setSelectedQuizId] = useState(null);
 
   const handleSignOut = () => {
     signOut(auth)
       .then(() => {
         setUser(null);
-        setShowCreateQuiz(false); // Resetear estado al cerrar sesión
+        setShowCreateQuiz(false);
+        setShowQuizList(false);
+        setSelectedQuizId(null);
       })
       .catch((error) => {
         console.error("Error signing out:", error);
@@ -53,6 +59,11 @@ const App = () => {
     }
   };
 
+  const handleQuizSelect = (quizId) => {
+    setSelectedQuizId(quizId);
+    setShowQuizList(false); // Hide the quiz list when a quiz is selected
+  };
+
   return (
     <div className="main-container">
       {user ? (
@@ -66,10 +77,15 @@ const App = () => {
               <FaSignOutAlt className="icon" onClick={handleSignOut} title="Cerrar sesión" />
               <FaTrashAlt className="icon" onClick={handleDeleteAccount} title="Eliminar cuenta" />
             </div>
-            <button onClick={() => setShowCreateQuiz(!showCreateQuiz)}>Crear cuestionario</button>
+            <button onClick={() => { setShowCreateQuiz(!showCreateQuiz); setShowQuizList(false); setSelectedQuizId(null); }}>Crear cuestionario</button>
+            <button onClick={() => { setShowQuizList(!showQuizList); setShowCreateQuiz(false); setSelectedQuizId(null); }}>Ver cuestionarios</button>
           </header>
           {showCreateQuiz ? (
             <CreateQuiz user={user} onBack={() => setShowCreateQuiz(false)} />
+          ) : selectedQuizId ? (
+            <ResolveQuiz quizId={selectedQuizId} onBack={() => setSelectedQuizId(null)} />
+          ) : showQuizList ? (
+            <QuizList onQuizSelect={handleQuizSelect} />
           ) : (
             <p>Bienvenido a la aplicación</p>
           )}
