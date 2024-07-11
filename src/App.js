@@ -4,36 +4,52 @@ import Login from './components/Login';
 import './App.css';
 import { auth, db } from './firebaseConfig';
 import { signOut, deleteUser } from 'firebase/auth';
-import { doc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { FaSignOutAlt, FaTrashAlt } from 'react-icons/fa';
+import CreateQuiz from './components/CreateQuiz';
 
 const App = () => {
   const [user, setUser] = useState(null);
   const [showSignUp, setShowSignUp] = useState(false);
+  const [showCreateQuiz, setShowCreateQuiz] = useState(false);
 
   const handleSignOut = () => {
-    signOut(auth).then(() => {
-      setUser(null);
-    }).catch((error) => {
-      console.error("Error signing out:", error);
-    });
+    signOut(auth)
+      .then(() => {
+        setUser(null);
+        setShowCreateQuiz(false); // Resetear estado al cerrar sesión
+      })
+      .catch((error) => {
+        console.error("Error signing out:", error);
+      });
   };
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     if (window.confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) {
-      const currentUser = auth.currentUser;
-      const userDocRef = doc(db, 'users', currentUser.uid);
+      try {
+        const currentUser = auth.currentUser;
+        const userDocRef = doc(db, 'users', currentUser.uid);
 
-      deleteDoc(userDocRef).then(() => {
-        deleteUser(currentUser).then(() => {
-          setUser(null);
-          alert('Tu cuenta ha sido eliminada.');
-        }).catch((error) => {
-          console.error("Error deleting user:", error);
-        });
-      }).catch((error) => {
-        console.error("Error deleting user document:", error);
-      });
+        await deleteDoc(userDocRef);
+        await deleteUser(currentUser);
+        setUser(null);
+        alert('Tu cuenta ha sido eliminada.');
+      } catch (error) {
+        console.error("Error deleting user:", error);
+      }
+    }
+  };
+
+  const fetchUserData = async (user) => {
+    try {
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        setUser({ ...user, ...userDoc.data() });
+      } else {
+        console.error('No se encontraron datos de usuario.');
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
     }
   };
 
@@ -50,15 +66,20 @@ const App = () => {
               <FaSignOutAlt className="icon" onClick={handleSignOut} title="Cerrar sesión" />
               <FaTrashAlt className="icon" onClick={handleDeleteAccount} title="Eliminar cuenta" />
             </div>
+            <button onClick={() => setShowCreateQuiz(!showCreateQuiz)}>Crear cuestionario</button>
           </header>
-          <p>Bienvenido a la aplicación</p>
+          {showCreateQuiz ? (
+            <CreateQuiz user={user} onBack={() => setShowCreateQuiz(false)} />
+          ) : (
+            <p>Bienvenido a la aplicación</p>
+          )}
         </div>
       ) : (
         <div>
           <h1 className="secondary-color">Bienvenido a la App Educativa</h1>
           {!showSignUp ? (
             <>
-              <Login setUser={setUser} />
+              <Login setUser={fetchUserData} />
               <button onClick={() => setShowSignUp(true)}>Registrarse</button>
             </>
           ) : (

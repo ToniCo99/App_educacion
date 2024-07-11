@@ -1,8 +1,7 @@
 // src/components/Login.js
 import React, { useState } from 'react';
-import { auth, db } from '../firebaseConfig';
+import { auth } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
 import { getErrorMessage } from '../errorMessages';
 
 const Login = ({ setUser }) => {
@@ -16,11 +15,11 @@ const Login = ({ setUser }) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      setUser({ ...user, ...userDoc.data() });
+      setUser(user);
     } catch (error) {
       const errorMessage = getErrorMessage(error.code);
       setError(errorMessage);
+      console.error("Error logging in:", error);
     }
   };
 
