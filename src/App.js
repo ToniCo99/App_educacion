@@ -44,7 +44,6 @@ const App = () => {
           <header>
             <div className="user-info">
               <p>ID: {user.id}</p>
-              <p className={`role-tag ${user.role.toLowerCase()}`}>{user.role}</p>
             </div>
             <h1>¡Hola {user.displayName || user.email}!</h1>
             <div className="icon-container">

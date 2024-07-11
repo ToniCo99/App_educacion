@@ -51,8 +51,7 @@ form {
 
 input[type="text"],
 input[type="email"],
-input[type="password"],
-select {
+input[type="password"] {
   border: 1px solid #b6d4e3;
   border-radius: 4px;
   box-sizing: border-box;
@@ -124,21 +123,4 @@ h1 {
 .user-info p {
   margin: 0;
   font-size: 16px;
-}
-
-.role-tag {
-  display: inline-block;
-  padding: 5px 10px;
-  border-radius: 4px;
-  color: white;
-  font-weight: bold;
-  margin-top: 5px;
-}
-
-.role-tag.estudiante {
-  background-color: #4CAF50; /* Verde para estudiantes */
-}
-
-.role-tag.profesor {
-  background-color: #2196F3; /* Azul para profesores */
 }
