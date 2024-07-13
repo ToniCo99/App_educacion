@@ -1,27 +1,48 @@
 import React, { useState } from 'react';
-import { auth } from '../firebaseConfig';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import { auth, db } from '../firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
 import '../App.css';
 
 const Login = ({ onLoginSuccess, onShowSignUp }) => {
-  const [email, setEmail] = useState('antoniocoru994@gmail.com');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [resendMessage, setResendMessage] = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      onLoginSuccess();
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Obtener el documento del usuario desde Firestore
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+
+        if (user.emailVerified) {
+          onLoginSuccess();
+        } else {
+          setError('Por favor, verifica tu correo electrónico antes de iniciar sesión.');
+          await sendEmailVerification(user);
+          setResendMessage('Se ha reenviado el correo de verificación. Por favor, revisa tu bandeja de entrada.');
+          auth.signOut(); // Cerrar sesión si el correo no está verificado
+        }
+      } else {
+        setError('No se encontró el documento del usuario.');
+        auth.signOut();
+      }
     } catch (error) {
-      setError(error.message);
+      setError('Correo o contraseña incorrectos.');
     }
   };
 
   return (
     <div className="container">
       <h1>Iniciar Sesión</h1>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="error-message">{error}</p>}
+      {resendMessage && <p className="confirmation-message">{resendMessage}</p>}
       <form onSubmit={handleLogin}>
         <div className="form-group">
           <label htmlFor="email">Correo Electrónico</label>

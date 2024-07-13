@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { collection, addDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import '../App.css';
 
 const SignUp = ({ onSignUpSuccess, onBack }) => {
@@ -14,14 +14,23 @@ const SignUp = ({ onSignUpSuccess, onBack }) => {
     e.preventDefault();
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await addDoc(collection(db, 'users'), {
-        uid: userCredential.user.uid,
+      const actionCodeSettings = {
+        url: 'http://localhost:3000/verify-email', // Asegúrate de que esta URL sea correcta
+        handleCodeInApp: true,
+      };
+      await sendEmailVerification(userCredential.user, actionCodeSettings);
+      console.log('User created with UID:', userCredential.user.uid);
+
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
         name,
         email,
-        id: Math.random().toString(36).substring(2, 12),
+        emailVerified: false,
       });
+      console.log('User document added to Firestore');
+      auth.signOut(); // Cerrar sesión inmediatamente después de la creación de la cuenta
       onSignUpSuccess();
     } catch (error) {
+      console.error('Error during sign up:', error);
       setError(error.message);
     }
   };
@@ -29,7 +38,7 @@ const SignUp = ({ onSignUpSuccess, onBack }) => {
   return (
     <div className="container">
       <h1>Registrarse</h1>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="error-message">{error}</p>}
       <form onSubmit={handleSignUp}>
         <div className="form-group">
           <label htmlFor="name">Nombre</label>
@@ -63,7 +72,7 @@ const SignUp = ({ onSignUpSuccess, onBack }) => {
         </div>
         <button type="submit">Registrarse</button>
       </form>
-      <button onClick={onBack}>Volver</button>
+      <button type="button" onClick={onBack}>Volver</button>
     </div>
   );
 };

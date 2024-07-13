@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Login from './components/Login';
 import SignUp from './components/SignUp';
 import QuizList from './components/QuizList';
-import CreateQuiz from './components/CreateQuiz';
+import CreateQuizPage from './components/CreateQuizPage';
 import ResolveQuiz from './components/ResolveQuiz';
 import { auth, db } from './firebaseConfig';
 import { signOut } from 'firebase/auth';
@@ -12,15 +12,19 @@ import './App.css';
 const App = () => {
   const [user, setUser] = useState(null);
   const [userId, setUserId] = useState('');
+  const [userName, setUserName] = useState('');
   const [selectedQuizId, setSelectedQuizId] = useState(null);
   const [showSignUp, setShowSignUp] = useState(false);
+  const [showCreateQuiz, setShowCreateQuiz] = useState(false);
+  const [confirmationMessage, setConfirmationMessage] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
       if (auth.currentUser) {
         const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
         if (userDoc.exists()) {
-          setUserId(userDoc.data().id);
+          setUserId(auth.currentUser.uid);
+          setUserName(userDoc.data().name);
         }
       }
     };
@@ -33,13 +37,14 @@ const App = () => {
 
   const handleSignUpSuccess = () => {
     setShowSignUp(false);
-    setUser(auth.currentUser);
+    setConfirmationMessage('Tu cuenta ha sido creada correctamente. Por favor, confirma tu correo electrónico.');
   };
 
   const handleLogout = async () => {
     await signOut(auth);
     setUser(null);
     setUserId('');
+    setUserName('');
   };
 
   const handleQuizSelect = (quizId) => {
@@ -48,18 +53,26 @@ const App = () => {
 
   const handleBack = () => {
     setSelectedQuizId(null);
+    setShowCreateQuiz(false);
   };
 
   if (!user) {
     return showSignUp ? (
       <SignUp onSignUpSuccess={handleSignUpSuccess} onBack={() => setShowSignUp(false)} />
     ) : (
-      <Login onLoginSuccess={handleLoginSuccess} onShowSignUp={() => setShowSignUp(true)} />
+      <div className="container">
+        {confirmationMessage && <p className="confirmation-message">{confirmationMessage}</p>}
+        <Login onLoginSuccess={handleLoginSuccess} onShowSignUp={() => setShowSignUp(true)} />
+      </div>
     );
   }
 
   if (selectedQuizId) {
     return <ResolveQuiz quizId={selectedQuizId} onBack={handleBack} />;
+  }
+
+  if (showCreateQuiz) {
+    return <CreateQuizPage onBack={handleBack} />;
   }
 
   return (
@@ -68,8 +81,9 @@ const App = () => {
         <span className="user-id">ID: {userId}</span>
         <button onClick={handleLogout}>Cerrar Sesión</button>
       </div>
+      <h2>¡Bienvenido, {userName}!</h2>
       <QuizList onQuizSelect={handleQuizSelect} />
-      <CreateQuiz onBack={handleBack} />
+      <button onClick={() => setShowCreateQuiz(true)} className="create-quiz-button">Crear Cuestionario</button>
     </div>
   );
 };
