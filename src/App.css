@@ -1,3 +1,4 @@
+/* Estilos previos se mantienen */
 body {
   font-family: 'Roboto', sans-serif;
   background-color: #F5F5F5;
@@ -156,12 +157,18 @@ input[type="radio"] {
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.3s, transform 0.3s;
+  color: #333333; /* Texto en negro */
 }
 
 .option-button:hover {
   background-color: #6BBF59;
   color: white;
   transform: scale(1.05);
+}
+
+.option-button.selected {
+  background-color: #6BBF59;
+  color: white;
 }
 
 .result {

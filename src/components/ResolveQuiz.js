@@ -6,99 +6,98 @@ import '../App.css';
 const ResolveQuiz = ({ quizId, onBack }) => {
   const [quiz, setQuiz] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedOptions, setSelectedOptions] = useState([]);
   const [score, setScore] = useState(0);
-  const [resultMessage, setResultMessage] = useState('');
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [result, setResult] = useState(null);
 
   useEffect(() => {
     const fetchQuiz = async () => {
       const docRef = doc(db, 'quizzes', quizId);
       const docSnap = await getDoc(docRef);
+
       if (docSnap.exists()) {
         setQuiz(docSnap.data());
       } else {
-        console.error('No such document!');
+        console.log('No such document!');
       }
     };
+
     fetchQuiz();
   }, [quizId]);
 
-  const handleOptionSelect = (optionIndex) => {
-    const newSelectedOptions = [...selectedOptions];
-    newSelectedOptions[currentQuestionIndex] = optionIndex;
-    setSelectedOptions(newSelectedOptions);
+  const handleOptionClick = (optionIndex) => {
+    setSelectedOption(optionIndex);
   };
 
   const handleNextQuestion = () => {
-    if (selectedOptions[currentQuestionIndex] !== undefined) {
-      const isCorrect = selectedOptions[currentQuestionIndex] === quiz.questions[currentQuestionIndex].correctOption;
-      if (isCorrect) {
-        setScore(score + 1);
-      }
-      if (currentQuestionIndex < quiz.questions.length - 1) {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
-      } else {
-        handleFinishQuiz();
-      }
+    if (selectedOption === quiz.questions[currentQuestionIndex].correctOption) {
+      setScore(score + 1);
+    }
+    
+    if (currentQuestionIndex < quiz.questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedOption(null);
+    } else {
+      calculateResult(score + (selectedOption === quiz.questions[currentQuestionIndex].correctOption ? 1 : 0));
     }
   };
 
-  const handleFinishQuiz = () => {
-    const totalQuestions = quiz.questions.length;
-    const percentageScore = (score / totalQuestions) * 100;
-    let message = '';
+  const calculateResult = (finalScore) => {
+    const percentage = (finalScore / quiz.questions.length) * 100;
+    let resultMessage = '';
 
-    if (percentageScore < 25) {
-      message = quiz.resultMessages.lessThan25;
-    } else if (percentageScore >= 25 && percentageScore < 50) {
-      message = quiz.resultMessages.between25And50;
-    } else if (percentageScore >= 50 && percentageScore < 75) {
-      message = quiz.resultMessages.between50And75;
-    } else if (percentageScore >= 75) {
-      message = quiz.resultMessages.between75And100;
+    if (percentage < 25) {
+      resultMessage = quiz.resultMessages.lessThan25;
+    } else if (percentage >= 25 && percentage < 50) {
+      resultMessage = quiz.resultMessages.between25And50;
+    } else if (percentage >= 50 && percentage < 75) {
+      resultMessage = quiz.resultMessages.between50And75;
+    } else if (percentage >= 75 && percentage <= 100) {
+      resultMessage = quiz.resultMessages.between75And100;
     }
 
-    setResultMessage(message);
+    setResult(`${resultMessage} (Nota: ${percentage.toFixed(2)}%)`);
   };
 
   if (!quiz) {
-    return <p>Cargando...</p>;
+    return <div>Cargando...</div>;
   }
 
-  if (resultMessage) {
+  if (result) {
     return (
       <div className="container">
         <h1>Resultado</h1>
-        <p>{resultMessage}</p>
-        <button onClick={onBack}>Volver al Inicio</button>
+        <p>{result}</p>
+        <button onClick={onBack}>Volver al inicio</button>
       </div>
     );
   }
-
-  const currentQuestion = quiz.questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
 
   return (
     <div className="container">
       <h1>{quiz.title}</h1>
       <div className="progress-bar-container">
-        <div className="progress-bar" style={{ width: `${progress}%` }}></div>
+        <div
+          className="progress-bar"
+          style={{ width: `${(currentQuestionIndex / quiz.questions.length) * 100}%` }}
+        />
       </div>
       <div className="question-container">
         <h2>Pregunta {currentQuestionIndex + 1}</h2>
-        <p>{currentQuestion.question}</p>
-        {currentQuestion.options.map((option, index) => (
+        <p>{quiz.questions[currentQuestionIndex].question}</p>
+        {quiz.questions[currentQuestionIndex].options.map((option, index) => (
           <button
             key={index}
-            className={`option-button ${selectedOptions[currentQuestionIndex] === index ? 'selected' : ''}`}
-            onClick={() => handleOptionSelect(index)}
+            className={`option-button ${selectedOption === index ? 'selected' : ''}`}
+            onClick={() => handleOptionClick(index)}
           >
             {option}
           </button>
         ))}
       </div>
-      <button onClick={handleNextQuestion}>Siguiente</button>
-      <button onClick={onBack}>Volver al Inicio</button>
+      <button onClick={handleNextQuestion} disabled={selectedOption === null}>
+        Siguiente
+      </button>
     </div>
   );
 };
