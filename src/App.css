@@ -74,6 +74,31 @@ input[type="radio"] {
   font-weight: bold;
 }
 
+.option-group {
+  display: flex;
+  align-items: center;
+}
+
+.option-group input[type="text"] {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.delete-icon {
+  color: #FF8C42;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.delete-question {
+  background: none;
+  border: none;
+  margin-left: 10px;
+  cursor: pointer;
+  color: red;
+}
+
 .card {
   padding: 20px;
   margin: 20px 0;
@@ -88,11 +113,36 @@ input[type="radio"] {
 
 .question-container, .result {
   text-align: center;
+  border: 2px solid #ddd;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  background-color: #FFF;
 }
 
 .question {
   margin: 20px 0;
   animation: fadeIn 1s ease-in-out;
+}
+
+.question-input {
+  border: 2px solid #FF8C42;
+  background-color: #fff5e6;
+  width: calc(100% - 30px); /* Ajusta el ancho del input para que no se desborde */
+}
+
+.option-input {
+  border: 2px solid #6BBF59;
+  background-color: #e6f7e6;
+}
+
+.title-group input {
+  border: 2px solid #6BBF59;
+  background-color: #e6f7e6;
+}
+
+.title-group label {
+  color: #6BBF59;
 }
 
 .option-button {
@@ -179,4 +229,29 @@ input[type="text"], input[type="email"], input[type="password"] {
   padding: 10px;
   font-size: 16px;
   color: #333333;
+}
+
+/* Additional Styles */
+.progress-bar-container {
+  width: 100%;
+  background-color: #F5F5F5;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.progress-bar {
+  height: 20px;
+  background-color: #6BBF59;
+  transition: width 0.3s;
+}
+
+.option-button.selected {
+  background-color: #6BBF59;
+  color: #fff;
+}
+
+.option-button:hover {
+  background-color: #FF8C42;
+  color: #fff;
 }

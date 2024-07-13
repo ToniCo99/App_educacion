@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { db } from '../firebaseConfig';
+import { db, auth } from '../firebaseConfig';
 import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import '../App.css';
 
-const CreateQuiz = ({ onBack }) => {
+const CreateQuizPage = ({ onBack }) => {
   const [title, setTitle] = useState('');
   const [questions, setQuestions] = useState([{ question: '', options: ['', ''], correctOption: 0 }]);
   const [resultMessages, setResultMessages] = useState({
@@ -93,7 +93,7 @@ const CreateQuiz = ({ onBack }) => {
         questions,
         resultMessages,
         createdAt: new Date(),
-        creator: 'creator-id-placeholder', // Aquí puedes poner el ID del creador real
+        creator: auth.currentUser.uid, // Utilizar la UID del usuario actual
       });
 
       // Actualizar el documento con el ID generado
@@ -107,92 +107,101 @@ const CreateQuiz = ({ onBack }) => {
   };
 
   return (
-    <div>
-      <h2>Crear Cuestionario</h2>
+    <div className="container">
+      <h1>Crear Cuestionario</h1>
       {error && <p className="error-message">{error}</p>}
-      <input
-        type="text"
-        placeholder="Título del cuestionario"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
+      <div className="form-group">
+        <label htmlFor="title">Título</label>
+        <input
+          type="text"
+          id="title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+      </div>
       {questions.map((q, qIndex) => (
-        <div key={qIndex} style={{ marginBottom: '20px', border: '1px solid #ddd', padding: '10px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h4>Pregunta {qIndex + 1}</h4>
+        <div key={qIndex} className="question-container">
+          <div className="form-group">
+            <label>Pregunta {qIndex + 1}</label>
+            <input
+              type="text"
+              value={q.question}
+              onChange={(e) => handleQuestionChange(qIndex, 'question', e.target.value)}
+              required
+            />
             {questions.length > 1 && (
-              <button type="button" onClick={() => handleRemoveQuestion(qIndex)} style={{ background: 'none', border: 'none' }}>
-                <FontAwesomeIcon icon={faTrashAlt} size="lg" color="red" />
+              <button type="button" onClick={() => handleRemoveQuestion(qIndex)} className="delete-question">
+                <FontAwesomeIcon icon={faTrashAlt} />
               </button>
             )}
           </div>
-          <input
-            type="text"
-            placeholder="Pregunta"
-            value={q.question}
-            onChange={(e) => handleQuestionChange(qIndex, 'question', e.target.value)}
-          />
           {q.options.map((option, oIndex) => (
-            <div key={oIndex} style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
+            <div key={oIndex} className="form-group option-group">
               <input
                 type="text"
                 placeholder={`Opción ${oIndex + 1}`}
                 value={option}
                 onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
-                style={{ marginRight: '10px' }}
+                required
               />
               <input
                 type="radio"
-                name={`correctOption${qIndex}`}
+                name={`correctOption-${qIndex}`}
                 checked={q.correctOption === oIndex}
                 onChange={() => handleCorrectOptionChange(qIndex, oIndex)}
               />
               {q.options.length > 2 && (
-                <button type="button" onClick={() => handleRemoveOption(qIndex, oIndex)} style={{ background: 'none', border: 'none', marginLeft: '10px' }}>
-                  <FontAwesomeIcon icon={faTrashAlt} size="lg" color="red" />
+                <button type="button" onClick={() => handleRemoveOption(qIndex, oIndex)} className="delete-icon">
+                  <FontAwesomeIcon icon={faTrashAlt} />
                 </button>
               )}
             </div>
           ))}
-          <button type="button" onClick={() => handleAddOption(qIndex)} style={{ marginTop: '10px' }}>Añadir Opción</button>
+          <button type="button" onClick={() => handleAddOption(qIndex)}>Añadir Opción</button>
         </div>
       ))}
       <button type="button" onClick={handleAddQuestion}>Añadir Pregunta</button>
-      <div style={{ marginTop: '20px' }}>
-        <h3>Mensajes de Resultado</h3>
+      <div className="form-group">
+        <label>Mensaje para menos del 25%</label>
         <input
           type="text"
-          placeholder="Menos del 25%"
           value={resultMessages.lessThan25}
           onChange={(e) => setResultMessages({ ...resultMessages, lessThan25: e.target.value })}
-          style={{ display: 'block', marginBottom: '10px' }}
-        />
-        <input
-          type="text"
-          placeholder="Entre 25% y 50%"
-          value={resultMessages.between25And50}
-          onChange={(e) => setResultMessages({ ...resultMessages, between25And50: e.target.value })}
-          style={{ display: 'block', marginBottom: '10px' }}
-        />
-        <input
-          type="text"
-          placeholder="Entre 50% y 75%"
-          value={resultMessages.between50And75}
-          onChange={(e) => setResultMessages({ ...resultMessages, between50And75: e.target.value })}
-          style={{ display: 'block', marginBottom: '10px' }}
-        />
-        <input
-          type="text"
-          placeholder="Entre 75% y 100%"
-          value={resultMessages.between75And100}
-          onChange={(e) => setResultMessages({ ...resultMessages, between75And100: e.target.value })}
-          style={{ display: 'block', marginBottom: '10px' }}
+          required
         />
       </div>
-      <button type="button" onClick={handleSubmit} style={{ marginTop: '20px' }}>Crear Cuestionario</button>
-      <button type="button" onClick={onBack} style={{ marginTop: '10px' }}>Volver</button>
+      <div className="form-group">
+        <label>Mensaje para entre el 25% y el 50%</label>
+        <input
+          type="text"
+          value={resultMessages.between25And50}
+          onChange={(e) => setResultMessages({ ...resultMessages, between25And50: e.target.value })}
+          required
+        />
+      </div>
+      <div className="form-group">
+        <label>Mensaje para entre el 50% y el 75%</label>
+        <input
+          type="text"
+          value={resultMessages.between50And75}
+          onChange={(e) => setResultMessages({ ...resultMessages, between50And75: e.target.value })}
+          required
+        />
+      </div>
+      <div className="form-group">
+        <label>Mensaje para entre el 75% y el 100%</label>
+        <input
+          type="text"
+          value={resultMessages.between75And100}
+          onChange={(e) => setResultMessages({ ...resultMessages, between75And100: e.target.value })}
+          required
+        />
+      </div>
+      <button type="button" onClick={handleSubmit}>Crear Cuestionario</button>
+      <button type="button" onClick={onBack}>Volver</button>
     </div>
   );
 };
 
-export default CreateQuiz;
+export default CreateQuizPage;
