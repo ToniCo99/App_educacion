@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebaseConfig';
 import { collection, getDocs, orderBy, query, limit } from 'firebase/firestore';
+import '../App.css';
 
 const QuizList = ({ onQuizSelect }) => {
   const [quizzes, setQuizzes] = useState([]);
@@ -10,9 +11,7 @@ const QuizList = ({ onQuizSelect }) => {
       try {
         const q = query(collection(db, 'quizzes'), orderBy('createdAt', 'desc'), limit(10));
         const querySnapshot = await getDocs(q);
-        const quizzesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        console.log('Fetched quizzes:', quizzesData); // Verificar los IDs
-        setQuizzes(quizzesData);
+        setQuizzes(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       } catch (error) {
         console.error('Error fetching quizzes:', error);
       }
@@ -22,15 +21,13 @@ const QuizList = ({ onQuizSelect }) => {
   }, []);
 
   return (
-    <div>
+    <div className="container">
       <h2>Últimos Cuestionarios Publicados</h2>
       <ul>
         {quizzes.map(quiz => (
-          <li key={quiz.id} onClick={() => {
-            console.log('Selected quiz ID:', quiz.id); // Log para verificar el ID seleccionado
-            onQuizSelect(quiz.id);
-          }}>
-            {quiz.title} (ID: {quiz.id})  {/* Mostrar el ID para depuración */}
+          <li key={quiz.id} className="card" onClick={() => onQuizSelect(quiz.id)}>
+            <h4>{quiz.title}</h4>
+            <p>ID: {quiz.id}</p>
           </li>
         ))}
       </ul>

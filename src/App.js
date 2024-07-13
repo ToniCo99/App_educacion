@@ -1,111 +1,75 @@
-import React, { useState } from 'react';
-import SignUp from './components/SignUp';
+import React, { useState, useEffect } from 'react';
 import Login from './components/Login';
-import './App.css';
-import { auth, db } from './firebaseConfig';
-import { signOut, deleteUser } from 'firebase/auth';
-import { doc, getDoc, deleteDoc } from 'firebase/firestore';
-import { FaSignOutAlt, FaTrashAlt } from 'react-icons/fa';
-import CreateQuiz from './components/CreateQuiz';
+import SignUp from './components/SignUp';
 import QuizList from './components/QuizList';
+import CreateQuiz from './components/CreateQuiz';
 import ResolveQuiz from './components/ResolveQuiz';
+import { auth, db } from './firebaseConfig';
+import { signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import './App.css';
 
 const App = () => {
   const [user, setUser] = useState(null);
-  const [showSignUp, setShowSignUp] = useState(false);
-  const [showCreateQuiz, setShowCreateQuiz] = useState(false);
-  const [showQuizList, setShowQuizList] = useState(false);
+  const [userId, setUserId] = useState('');
   const [selectedQuizId, setSelectedQuizId] = useState(null);
+  const [showSignUp, setShowSignUp] = useState(false);
 
-  const handleSignOut = () => {
-    signOut(auth)
-      .then(() => {
-        setUser(null);
-        setShowCreateQuiz(false);
-        setShowQuizList(false);
-        setSelectedQuizId(null);
-      })
-      .catch((error) => {
-        console.error("Error signing out:", error);
-      });
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (auth.currentUser) {
+        const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+        if (userDoc.exists()) {
+          setUserId(userDoc.data().id);
+        }
+      }
+    };
+    fetchUserData();
+  }, [user]);
+
+  const handleLoginSuccess = () => {
+    setUser(auth.currentUser);
   };
 
-  const handleDeleteAccount = async () => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) {
-      try {
-        const currentUser = auth.currentUser;
-        const userDocRef = doc(db, 'users', currentUser.uid);
-
-        await deleteDoc(userDocRef);
-        await deleteUser(currentUser);
-        setUser(null);
-        alert('Tu cuenta ha sido eliminada.');
-      } catch (error) {
-        console.error("Error deleting user:", error);
-      }
-    }
+  const handleSignUpSuccess = () => {
+    setShowSignUp(false);
+    setUser(auth.currentUser);
   };
 
-  const fetchUserData = async (user) => {
-    try {
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      if (userDoc.exists()) {
-        setUser({ ...user, ...userDoc.data() });
-      } else {
-        console.error('No se encontraron datos de usuario.');
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
+  const handleLogout = async () => {
+    await signOut(auth);
+    setUser(null);
+    setUserId('');
   };
 
   const handleQuizSelect = (quizId) => {
     setSelectedQuizId(quizId);
-    setShowQuizList(false); // Hide the quiz list when a quiz is selected
   };
 
+  const handleBack = () => {
+    setSelectedQuizId(null);
+  };
+
+  if (!user) {
+    return showSignUp ? (
+      <SignUp onSignUpSuccess={handleSignUpSuccess} onBack={() => setShowSignUp(false)} />
+    ) : (
+      <Login onLoginSuccess={handleLoginSuccess} onShowSignUp={() => setShowSignUp(true)} />
+    );
+  }
+
+  if (selectedQuizId) {
+    return <ResolveQuiz quizId={selectedQuizId} onBack={handleBack} />;
+  }
+
   return (
-    <div className="main-container">
-      {user ? (
-        <div>
-          <header>
-            <div className="user-info">
-              <p>ID: {user.id}</p>
-            </div>
-            <h1>¡Hola {user.displayName || user.email}!</h1>
-            <div className="icon-container">
-              <FaSignOutAlt className="icon" onClick={handleSignOut} title="Cerrar sesión" />
-              <FaTrashAlt className="icon" onClick={handleDeleteAccount} title="Eliminar cuenta" />
-            </div>
-            <button onClick={() => { setShowCreateQuiz(!showCreateQuiz); setShowQuizList(false); setSelectedQuizId(null); }}>Crear cuestionario</button>
-            <button onClick={() => { setShowQuizList(!showQuizList); setShowCreateQuiz(false); setSelectedQuizId(null); }}>Ver cuestionarios</button>
-          </header>
-          {showCreateQuiz ? (
-            <CreateQuiz user={user} onBack={() => setShowCreateQuiz(false)} />
-          ) : selectedQuizId ? (
-            <ResolveQuiz quizId={selectedQuizId} onBack={() => setSelectedQuizId(null)} />
-          ) : showQuizList ? (
-            <QuizList onQuizSelect={handleQuizSelect} />
-          ) : (
-            <p>Bienvenido a la aplicación</p>
-          )}
-        </div>
-      ) : (
-        <div>
-          <h1 className="secondary-color">Bienvenido a la App Educativa</h1>
-          {!showSignUp ? (
-            <>
-              <Login setUser={fetchUserData} />
-              <button onClick={() => setShowSignUp(true)}>Registrarse</button>
-            </>
-          ) : (
-            <>
-              <SignUp />
-              <button onClick={() => setShowSignUp(false)}>Cancelar</button>
-            </>
-          )}
-        </div>
-      )}
+    <div className="container">
+      <div className="header">
+        <span className="user-id">ID: {userId}</span>
+        <button onClick={handleLogout}>Cerrar Sesión</button>
+      </div>
+      <QuizList onQuizSelect={handleQuizSelect} />
+      <CreateQuiz onBack={handleBack} />
     </div>
   );
 };

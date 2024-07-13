@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
+import './ResolveQuiz.css';
 
 const ResolveQuiz = ({ quizId, onBack }) => {
   const [quiz, setQuiz] = useState(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -11,22 +13,16 @@ const ResolveQuiz = ({ quizId, onBack }) => {
 
   useEffect(() => {
     const fetchQuiz = async () => {
-      console.log("Fetching quiz with ID:", quizId); // Verificar el ID
       try {
         const docRef = doc(db, 'quizzes', quizId);
-        console.log('docRef path:', docRef.path); // Verificar el path del documento
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          console.log("Document data:", docSnap.data()); // Verificar los datos del documento
           setQuiz(docSnap.data());
           setAnswers(new Array(docSnap.data().questions.length).fill(null));
-          setError(null); // Limpiar errores previos
         } else {
-          console.error('No such document!');
           setError('No se encontró el cuestionario.');
         }
       } catch (error) {
-        console.error('Error fetching quiz:', error);
         setError('Error al cargar el cuestionario.');
       } finally {
         setLoading(false);
@@ -36,10 +32,18 @@ const ResolveQuiz = ({ quizId, onBack }) => {
     fetchQuiz();
   }, [quizId]);
 
-  const handleAnswerChange = (qIndex, oIndex) => {
+  const handleAnswerChange = (oIndex) => {
     const newAnswers = [...answers];
-    newAnswers[qIndex] = oIndex;
+    newAnswers[currentQuestionIndex] = oIndex;
     setAnswers(newAnswers);
+  };
+
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < quiz.questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      calculateResult();
+    }
   };
 
   const calculateResult = () => {
@@ -77,32 +81,32 @@ const ResolveQuiz = ({ quizId, onBack }) => {
   }
 
   return (
-    <div>
-      {quiz ? (
-        <div>
-          <h2>{quiz.title}</h2>
-          {quiz.questions.map((q, qIndex) => (
-            <div key={qIndex}>
-              <p>{q.question}</p>
-              {q.options.map((option, oIndex) => (
-                <div key={oIndex}>
-                  <input
-                    type="radio"
-                    name={`question${qIndex}`}
-                    checked={answers[qIndex] === oIndex}
-                    onChange={() => handleAnswerChange(qIndex, oIndex)}
-                  />
-                  {option}
-                </div>
-              ))}
-            </div>
-          ))}
-          <button onClick={calculateResult}>Enviar</button>
-          <button onClick={onBack}>Volver</button>
-          {result && <p>Resultado: {result}</p>}
+    <div className="quiz-container">
+      {result ? (
+        <div className="result">
+          <h2>Resultado</h2>
+          <p>{result}</p>
+          <button onClick={onBack} className="back-button">Volver</button>
         </div>
       ) : (
-        <p>Cargando...</p>
+        <div className="question-container">
+          <h2>{quiz.title}</h2>
+          <div className={`question ${currentQuestionIndex % 2 === 0 ? 'fade-in' : 'fade-out'}`}>
+            <p>{quiz.questions[currentQuestionIndex].question}</p>
+            {quiz.questions[currentQuestionIndex].options.map((option, oIndex) => (
+              <button
+                key={oIndex}
+                className="option-button"
+                onClick={() => {
+                  handleAnswerChange(oIndex);
+                  handleNextQuestion();
+                }}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
