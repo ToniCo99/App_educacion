@@ -33,7 +33,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
     if (selectedOption === quiz.questions[currentQuestionIndex].correctOption) {
       setScore(score + 1);
     }
-    
+
     if (currentQuestionIndex < quiz.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedOption(null);
@@ -95,9 +95,14 @@ const ResolveQuiz = ({ quizId, onBack }) => {
           </button>
         ))}
       </div>
-      <button onClick={handleNextQuestion} disabled={selectedOption === null}>
-        Siguiente
-      </button>
+      <div className="navigation-buttons">
+        <button onClick={onBack} style={{ backgroundColor: 'red', color: '#FFFFFF' }}>
+          Salir
+        </button>
+        <button onClick={handleNextQuestion} disabled={selectedOption === null}>
+          Siguiente
+        </button>
+      </div>
     </div>
   );
 };

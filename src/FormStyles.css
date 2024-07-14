@@ -1,0 +1,76 @@
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  input[type="radio"] {
+    width: auto;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    font-family: 'Poppins', sans-serif;
+    font-weight: bold;
+  }
+  
+  input[type="text"], input[type="email"], input[type="password"] {
+    background-color: #FFFFFF;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 16px;
+    color: #333333;
+  }
+  
+  .title-group input {
+    border: 2px solid #6BBF59;
+    background-color: #e6f7e6;
+  }
+  
+  .title-group label {
+    color: #6BBF59;
+  }
+  
+  .question-input {
+    border: 2px solid #FF8C42;
+    background-color: #fff5e6;
+    width: calc(100% - 30px); /* Ajusta el ancho del input para que no se desborde */
+  }
+  
+  .option-input {
+    border: 2px solid #6BBF59;
+    background-color: #e6f7e6;
+  }
+  
+  .option-group {
+    display: flex;
+    align-items: center;
+  }
+  
+  .option-group input[type="text"] {
+    flex: 1;
+    margin-right: 10px;
+  }
+  
+  .delete-icon {
+    color: #FF8C42;
+    cursor: pointer;
+    background: none;
+    border: none;
+  }
+  
+  .delete-question {
+    background: none;
+    border: none;
+    margin-left: 10px;
+    cursor: pointer;
+    color: red;
+  }
+  
