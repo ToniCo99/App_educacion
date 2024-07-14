@@ -3,4 +3,8 @@
 @import './HeaderStyles.css';
 @import './ButtonStyles.css';
 @import './FormStyles.css';
-@import './QuizStyles.css';
+@import './QuizStyles.css'; 
+@import './ResolveQuiz.css'; 
+@import './CreateQuiz.css'; 
+
+/* Otros estilos que necesitas en App.css */

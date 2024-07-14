@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
-import '../App.css';
+import '../styles/App.css';
+
 
 const ResolveQuiz = ({ quizId, onBack }) => {
   const [quiz, setQuiz] = useState(null);

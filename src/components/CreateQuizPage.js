@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { db, auth } from '../firebaseConfig';
-import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { collection, addDoc } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
-import '../App.css';
+import '../styles/CreateQuiz.css';
 
 const CreateQuizPage = ({ onBack }) => {
   const [title, setTitle] = useState('');
@@ -59,6 +59,7 @@ const CreateQuizPage = ({ onBack }) => {
   };
 
   const handleSubmit = async () => {
+    // Validación de campos vacíos
     if (!title.trim()) {
       setError('El título no puede estar vacío.');
       return;
@@ -86,7 +87,8 @@ const CreateQuizPage = ({ onBack }) => {
     setError(''); // Limpiar el error si pasa la validación
 
     try {
-      const docRef = await addDoc(collection(db, 'quizzes'), {
+      // Crear el documento
+      await addDoc(collection(db, 'quizzes'), {
         title,
         questions,
         resultMessages,
@@ -94,9 +96,7 @@ const CreateQuizPage = ({ onBack }) => {
         creator: auth.currentUser.uid,
       });
 
-      await updateDoc(doc(db, 'quizzes', docRef.id), { id: docRef.id });
-
-      console.log('Cuestionario creado con ID:', docRef.id);
+      console.log('Cuestionario creado');
       onBack();
     } catch (error) {
       console.error('Error al crear el cuestionario:', error);
@@ -104,104 +104,91 @@ const CreateQuizPage = ({ onBack }) => {
   };
 
   return (
-    <div className="container">
-      <h1>Crear Cuestionario</h1>
+    <div>
+      <h2>Crear Cuestionario</h2>
       {error && <p className="error-message">{error}</p>}
-      <div className="form-group title-group">
-        <label htmlFor="title">Título del Test</label>
-        <input
-          type="text"
-          id="title"
-          className="title-input"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
-      </div>
+      <input
+        type="text"
+        placeholder="Título del cuestionario"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
       {questions.map((q, qIndex) => (
-        <div key={qIndex} className="question-container">
-          <div className="form-group question-group">
-            <label>Pregunta {qIndex + 1}</label>
-            <input
-              type="text"
-              className="question-input"
-              value={q.question}
-              onChange={(e) => handleQuestionChange(qIndex, 'question', e.target.value)}
-              required
-            />
+        <div key={qIndex} className="question-card">
+          <div className="question-header">
+            <h4>Pregunta {qIndex + 1}</h4>
             {questions.length > 1 && (
               <button type="button" onClick={() => handleRemoveQuestion(qIndex)} className="delete-question">
-                <FontAwesomeIcon icon={faTrashAlt} />
+                <FontAwesomeIcon icon={faTrashAlt} size="lg" color="red" />
               </button>
             )}
           </div>
-          <div className="options-container">
-            {q.options.map((option, oIndex) => (
-              <div key={oIndex} className="form-group option-group">
-                <input
-                  type="text"
-                  placeholder={`Opción ${oIndex + 1}`}
-                  className="option-input"
-                  value={option}
-                  onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
-                  required
-                />
-                <input
-                  type="radio"
-                  name={`correctOption-${qIndex}`}
-                  checked={q.correctOption === oIndex}
-                  onChange={() => handleCorrectOptionChange(qIndex, oIndex)}
-                />
-                {q.options.length > 2 && (
-                  <button type="button" onClick={() => handleRemoveOption(qIndex, oIndex)} className="delete-icon">
-                    <FontAwesomeIcon icon={faTrashAlt} />
-                  </button>
-                )}
-              </div>
-            ))}
-            <button type="button" onClick={() => handleAddOption(qIndex)} className="add-option-button">Añadir Opción</button>
-          </div>
+          <input
+            type="text"
+            placeholder="Pregunta"
+            value={q.question}
+            onChange={(e) => handleQuestionChange(qIndex, 'question', e.target.value)}
+            className="question-input"
+          />
+          {q.options.map((option, oIndex) => (
+            <div key={oIndex} className="option-group">
+              <input
+                type="text"
+                placeholder={`Opción ${oIndex + 1}`}
+                value={option}
+                onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
+                className="option-input"
+              />
+              <input
+                type="radio"
+                name={`correctOption${qIndex}`}
+                checked={q.correctOption === oIndex}
+                onChange={() => handleCorrectOptionChange(qIndex, oIndex)}
+              />
+              {q.options.length > 2 && (
+                <button type="button" onClick={() => handleRemoveOption(qIndex, oIndex)} className="delete-icon">
+                  <FontAwesomeIcon icon={faTrashAlt} size="lg" color="red" />
+                </button>
+              )}
+            </div>
+          ))}
+          <button type="button" onClick={() => handleAddOption(qIndex)} className="add-option-button">Añadir Opción</button>
         </div>
       ))}
-      <button type="button" onClick={handleAddQuestion} className="add-question-button">Añadir Pregunta</button>
-      <div className="form-group">
-        <label>Mensaje para menos del 25%</label>
+      <button type="button" onClick={handleAddQuestion}>Añadir Pregunta</button>
+      <div style={{ marginTop: '20px' }}>
+        <h3>Mensajes de Resultado</h3>
         <input
           type="text"
+          placeholder="Menos del 25%"
           value={resultMessages.lessThan25}
           onChange={(e) => setResultMessages({ ...resultMessages, lessThan25: e.target.value })}
-          required
+          style={{ display: 'block', marginBottom: '10px' }}
         />
-      </div>
-      <div className="form-group">
-        <label>Mensaje para entre el 25% y el 50%</label>
         <input
           type="text"
+          placeholder="Entre 25% y 50%"
           value={resultMessages.between25And50}
           onChange={(e) => setResultMessages({ ...resultMessages, between25And50: e.target.value })}
-          required
+          style={{ display: 'block', marginBottom: '10px' }}
         />
-      </div>
-      <div className="form-group">
-        <label>Mensaje para entre el 50% y el 75%</label>
         <input
           type="text"
+          placeholder="Entre 50% y 75%"
           value={resultMessages.between50And75}
           onChange={(e) => setResultMessages({ ...resultMessages, between50And75: e.target.value })}
-          required
+          style={{ display: 'block', marginBottom: '10px' }}
         />
-      </div>
-      <div className="form-group">
-        <label>Mensaje para entre el 75% y el 100%</label>
         <input
           type="text"
+          placeholder="Entre 75% y 100%"
           value={resultMessages.between75And100}
           onChange={(e) => setResultMessages({ ...resultMessages, between75And100: e.target.value })}
-          required
+          style={{ display: 'block', marginBottom: '10px' }}
         />
       </div>
-      <button type="button" onClick={handleSubmit} className="submit-button">Crear Cuestionario</button>
-      <button type="button" onClick={onBack} className="back-button">Volver</button>
+      <button type="button" onClick={handleSubmit} style={{ marginTop: '20px' }}>Crear Cuestionario</button>
+      <button type="button" onClick={onBack} style={{ marginTop: '10px' }}>Volver</button>
     </div>
   );
 };

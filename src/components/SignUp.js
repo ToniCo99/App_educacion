@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import '../App.css';
+import '../styles/App.css';
+
 
 const SignUp = ({ onSignUpSuccess, onBack }) => {
   const [name, setName] = useState('');

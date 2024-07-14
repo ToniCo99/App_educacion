@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { auth, db } from '../firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
-import '../App.css';
+import '../styles/App.css';
+
+
 
 const Login = ({ onLoginSuccess, onShowSignUp }) => {
   const [email, setEmail] = useState('');

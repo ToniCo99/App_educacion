@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { auth, db } from './firebaseConfig';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import Login from './components/Login';
 import SignUp from './components/SignUp';
 import QuizList from './components/QuizList';
 import CreateQuizPage from './components/CreateQuizPage';
 import ResolveQuiz from './components/ResolveQuiz';
-import { auth, db } from './firebaseConfig';
-import { signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import './App.css';
+import './styles/GeneralStyles.css';
+import './styles/HeaderStyles.css';
+import './styles/App.css';
 
 const App = () => {
   const [user, setUser] = useState(null);

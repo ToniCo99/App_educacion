@@ -3,7 +3,8 @@ import { db, auth } from '../firebaseConfig';
 import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
-import '../App.css';
+import '../styles/App.css';
+
 
 const CreateQuizPage = ({ onBack }) => {
   const [title, setTitle] = useState('');
