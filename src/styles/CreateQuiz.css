@@ -8,7 +8,12 @@ body {
 
 .create-quiz-container {
   text-align: center;
-  margin: 20px;
+  margin: 20px auto; /* Centro horizontal */
+  max-width: 800px; /* Ancho máximo para centrar */
+  background-color: #FFFFFF; /* Fondo blanco para el contenedor */
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .input-title, .input-question, .input-option, .input-result-message {
@@ -16,7 +21,7 @@ body {
   width: 80%;
   margin: 10px auto;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 2px solid #ccc;
   border-radius: 8px;
   font-family: 'Roboto', sans-serif;
   font-size: 16px;
@@ -27,7 +32,7 @@ body {
   border: 1px solid #ddd;
   padding: 10px;
   border-radius: 10px;
-  background-color: #FFFFFF;
+  background-color: #F9F9F9; /* Gris muy claro */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -62,7 +67,6 @@ body {
   font-size: 18px;
   font-weight: 600;
   color: #FFFFFF;
-  background-color: #FF8C42;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -70,8 +74,23 @@ body {
 }
 
 .add-option-button:hover, .add-question-button:hover, .create-quiz-button:hover, .back-button:hover {
-  background-color: #FF6F1F;
   transform: scale(1.05);
+}
+
+.add-option-button, .add-question-button, .create-quiz-button {
+  background-color: #FF8C42;
+}
+
+.add-option-button:hover, .add-question-button:hover, .create-quiz-button:hover {
+  background-color: #FF8C42;
+}
+
+.back-button {
+  background-color: red;
+}
+
+.back-button:hover {
+  background-color: #cc0000;
 }
 
 .delete-button {
@@ -80,15 +99,23 @@ body {
   margin-left: 10px;
   cursor: pointer;
   transition: transform 0.3s;
+  color: red; /* Cambiado a rojo */
 }
 
 .delete-button:hover {
   transform: scale(1.2);
+  color: red; /* Mantener rojo en hover */
 }
 
 .result-messages h3 {
   font-family: 'Poppins', sans-serif;
   font-size: 24px;
   color: #6BBF59;
+  margin-top: 20px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
   margin-top: 20px;
 }

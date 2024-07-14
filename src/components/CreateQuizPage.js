@@ -59,7 +59,6 @@ const CreateQuizPage = ({ onBack }) => {
   };
 
   const handleSubmit = async () => {
-    // Validación de campos vacíos
     if (!title.trim()) {
       setError('El título no puede estar vacío.');
       return;
@@ -84,11 +83,10 @@ const CreateQuizPage = ({ onBack }) => {
       return;
     }
 
-    setError(''); // Limpiar el error si pasa la validación
+    setError('');
 
     try {
-      // Crear el documento
-      await addDoc(collection(db, 'quizzes'), {
+      const docRef = await addDoc(collection(db, 'quizzes'), {
         title,
         questions,
         resultMessages,
@@ -96,7 +94,7 @@ const CreateQuizPage = ({ onBack }) => {
         creator: auth.currentUser.uid,
       });
 
-      console.log('Cuestionario creado');
+      console.log('Cuestionario creado con ID:', docRef.id);
       onBack();
     } catch (error) {
       console.error('Error al crear el cuestionario:', error);
@@ -104,50 +102,61 @@ const CreateQuizPage = ({ onBack }) => {
   };
 
   return (
-    <div>
-      <h2>Crear Cuestionario</h2>
+    <div className="container create-quiz-container">
+      <h1>Crear Cuestionario</h1>
       {error && <p className="error-message">{error}</p>}
-      <input
-        type="text"
-        placeholder="Título del cuestionario"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
+      <div className="form-group">
+        <label htmlFor="title">Título</label>
+        <input
+          type="text"
+          id="title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="input-title"
+          required
+        />
+      </div>
       {questions.map((q, qIndex) => (
-        <div key={qIndex} className="question-card">
+        <div key={qIndex} className="question-block">
           <div className="question-header">
             <h4>Pregunta {qIndex + 1}</h4>
             {questions.length > 1 && (
-              <button type="button" onClick={() => handleRemoveQuestion(qIndex)} className="delete-question">
-                <FontAwesomeIcon icon={faTrashAlt} size="lg" color="red" />
+              <button type="button" onClick={() => handleRemoveQuestion(qIndex)} className="delete-button">
+                <FontAwesomeIcon icon={faTrashAlt} />
               </button>
             )}
           </div>
-          <input
-            type="text"
-            placeholder="Pregunta"
-            value={q.question}
-            onChange={(e) => handleQuestionChange(qIndex, 'question', e.target.value)}
-            className="question-input"
-          />
+          <div className="form-group">
+            <label htmlFor={`question-${qIndex}`}>Pregunta</label>
+            <input
+              type="text"
+              id={`question-${qIndex}`}
+              value={q.question}
+              onChange={(e) => handleQuestionChange(qIndex, 'question', e.target.value)}
+              className="input-question"
+              required
+            />
+          </div>
           {q.options.map((option, oIndex) => (
-            <div key={oIndex} className="option-group">
+            <div key={oIndex} className="option-block">
               <input
                 type="text"
                 placeholder={`Opción ${oIndex + 1}`}
                 value={option}
                 onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
-                className="option-input"
+                className="input-option"
+                required
               />
               <input
                 type="radio"
-                name={`correctOption${qIndex}`}
+                name={`correctOption-${qIndex}`}
                 checked={q.correctOption === oIndex}
                 onChange={() => handleCorrectOptionChange(qIndex, oIndex)}
+                className="radio-button"
               />
               {q.options.length > 2 && (
-                <button type="button" onClick={() => handleRemoveOption(qIndex, oIndex)} className="delete-icon">
-                  <FontAwesomeIcon icon={faTrashAlt} size="lg" color="red" />
+                <button type="button" onClick={() => handleRemoveOption(qIndex, oIndex)} className="delete-button">
+                  <FontAwesomeIcon icon={faTrashAlt} />
                 </button>
               )}
             </div>
@@ -155,40 +164,58 @@ const CreateQuizPage = ({ onBack }) => {
           <button type="button" onClick={() => handleAddOption(qIndex)} className="add-option-button">Añadir Opción</button>
         </div>
       ))}
-      <button type="button" onClick={handleAddQuestion}>Añadir Pregunta</button>
-      <div style={{ marginTop: '20px' }}>
+      <button type="button" onClick={handleAddQuestion} className="add-question-button">Añadir Pregunta</button>
+      <div className="result-messages">
         <h3>Mensajes de Resultado</h3>
-        <input
-          type="text"
-          placeholder="Menos del 25%"
-          value={resultMessages.lessThan25}
-          onChange={(e) => setResultMessages({ ...resultMessages, lessThan25: e.target.value })}
-          style={{ display: 'block', marginBottom: '10px' }}
-        />
-        <input
-          type="text"
-          placeholder="Entre 25% y 50%"
-          value={resultMessages.between25And50}
-          onChange={(e) => setResultMessages({ ...resultMessages, between25And50: e.target.value })}
-          style={{ display: 'block', marginBottom: '10px' }}
-        />
-        <input
-          type="text"
-          placeholder="Entre 50% y 75%"
-          value={resultMessages.between50And75}
-          onChange={(e) => setResultMessages({ ...resultMessages, between50And75: e.target.value })}
-          style={{ display: 'block', marginBottom: '10px' }}
-        />
-        <input
-          type="text"
-          placeholder="Entre 75% y 100%"
-          value={resultMessages.between75And100}
-          onChange={(e) => setResultMessages({ ...resultMessages, between75And100: e.target.value })}
-          style={{ display: 'block', marginBottom: '10px' }}
-        />
+        <div className="form-group">
+          <label htmlFor="result-lessThan25">Menos del 25%</label>
+          <input
+            type="text"
+            id="result-lessThan25"
+            value={resultMessages.lessThan25}
+            onChange={(e) => setResultMessages({ ...resultMessages, lessThan25: e.target.value })}
+            className="input-result-message"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="result-between25And50">Entre 25% y 50%</label>
+          <input
+            type="text"
+            id="result-between25And50"
+            value={resultMessages.between25And50}
+            onChange={(e) => setResultMessages({ ...resultMessages, between25And50: e.target.value })}
+            className="input-result-message"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="result-between50And75">Entre 50% y 75%</label>
+          <input
+            type="text"
+            id="result-between50And75"
+            value={resultMessages.between50And75}
+            onChange={(e) => setResultMessages({ ...resultMessages, between50And75: e.target.value })}
+            className="input-result-message"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="result-between75And100">Entre 75% y 100%</label>
+          <input
+            type="text"
+            id="result-between75And100"
+            value={resultMessages.between75And100}
+            onChange={(e) => setResultMessages({ ...resultMessages, between75And100: e.target.value })}
+            className="input-result-message"
+            required
+          />
+        </div>
       </div>
-      <button type="button" onClick={handleSubmit} style={{ marginTop: '20px' }}>Crear Cuestionario</button>
-      <button type="button" onClick={onBack} style={{ marginTop: '10px' }}>Volver</button>
+      <div className="button-group">
+        <button type="button" className="back-button" onClick={onBack}>Volver</button>
+        <button type="button" className="create-quiz-button" onClick={handleSubmit}>Crear Cuestionario</button>
+      </div>
     </div>
   );
 };
