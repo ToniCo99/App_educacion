@@ -6,7 +6,11 @@ import '../styles/ResolveQuiz.css';
 const ResolveQuiz = ({ quizId, onBack }) => {
   const [quiz, setQuiz] = useState(null);
   const [responses, setResponses] = useState([]);
-  const [score, setScore] = useState(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedOptions, setSelectedOptions] = useState([]);
+  const [isAnswered, setIsAnswered] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [score, setScore] = useState(0);
   const [resultMessage, setResultMessage] = useState('');
 
   useEffect(() => {
@@ -25,38 +29,57 @@ const ResolveQuiz = ({ quizId, onBack }) => {
     fetchQuiz();
   }, [quizId]);
 
-  const handleOptionChange = (qIndex, oIndex, isMultipleChoice) => {
-    const newResponses = responses.slice();
-    if (isMultipleChoice) {
-      newResponses[qIndex] = newResponses[qIndex] || [];
-      if (newResponses[qIndex].includes(oIndex)) {
-        newResponses[qIndex] = newResponses[qIndex].filter(index => index !== oIndex);
+  const handleOptionSelect = (oIndex) => {
+    if (!isAnswered) {
+      if (quiz.questions[currentQuestionIndex].isMultipleChoice) {
+        let newSelectedOptions = [...selectedOptions];
+        if (newSelectedOptions.includes(oIndex)) {
+          newSelectedOptions = newSelectedOptions.filter(option => option !== oIndex);
+        } else {
+          newSelectedOptions.push(oIndex);
+        }
+        setSelectedOptions(newSelectedOptions);
       } else {
-        newResponses[qIndex].push(oIndex);
+        setSelectedOptions([oIndex]);
       }
-    } else {
-      newResponses[qIndex] = oIndex;
     }
-    setResponses(newResponses);
   };
 
-  const handleSubmit = () => {
-    let correctCount = 0;
-    quiz.questions.forEach((question, qIndex) => {
-      if (question.isMultipleChoice) {
-        const correctOptions = question.correctOption.sort().toString();
-        const selectedOptions = responses[qIndex] ? responses[qIndex].sort().toString() : '';
-        if (correctOptions === selectedOptions) {
-          correctCount++;
-        }
-      } else if (question.correctOption === responses[qIndex]) {
-        correctCount++;
-      }
-    });
+  const handleSubmitAnswer = () => {
+    if (selectedOptions.length > 0) {
+      const newResponses = responses.slice();
+      newResponses[currentQuestionIndex] = selectedOptions;
+      setResponses(newResponses);
 
+      const currentQuestion = quiz.questions[currentQuestionIndex];
+      if (currentQuestion.isMultipleChoice) {
+        const correctOptions = currentQuestion.correctOption.slice().sort().toString();
+        const selectedOptionsSorted = selectedOptions.slice().sort().toString();
+        if (correctOptions === selectedOptionsSorted) {
+          setScore(score + 1);
+        }
+      } else if (currentQuestion.correctOption === selectedOptions[0]) {
+        setScore(score + 1);
+      }
+      
+      setIsAnswered(true);
+    }
+  };
+
+  const handleNextQuestion = () => {
+    setSelectedOptions([]);
+    setIsAnswered(false);
+    if (currentQuestionIndex < quiz.questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      setShowResults(true);
+      calculateResults();
+    }
+  };
+
+  const calculateResults = () => {
     const totalQuestions = quiz.questions.length;
-    const scorePercentage = (correctCount / totalQuestions) * 100;
-    setScore(scorePercentage);
+    const scorePercentage = (score / totalQuestions) * 100;
 
     let message = '';
     if (scorePercentage < 25) {
@@ -76,34 +99,50 @@ const ResolveQuiz = ({ quizId, onBack }) => {
     return <div>Cargando...</div>;
   }
 
+  if (showResults) {
+    return (
+      <div className="container resolve-quiz-container">
+        <h1>{quiz.title}</h1>
+        <div className="result">
+          <h3>Resultado: {((score / quiz.questions.length) * 100).toFixed(2)}%</h3>
+          <p>{resultMessage}</p>
+        </div>
+        <button type="button" onClick={onBack} className="back-button">Volver</button>
+      </div>
+    );
+  }
+
+  const currentQuestion = quiz.questions[currentQuestionIndex];
+
   return (
     <div className="container resolve-quiz-container">
       <h1>{quiz.title}</h1>
-      {quiz.questions.map((q, qIndex) => (
-        <div key={qIndex} className="question-block">
-          <h4>{q.question}</h4>
-          {q.options.map((option, oIndex) => (
-            <div key={oIndex} className="option-block">
-              <input
-                type={q.isMultipleChoice ? "checkbox" : "radio"}
-                name={`question-${qIndex}`}
-                checked={q.isMultipleChoice ? responses[qIndex]?.includes(oIndex) : responses[qIndex] === oIndex}
-                onChange={() => handleOptionChange(qIndex, oIndex, q.isMultipleChoice)}
-                className="radio-button"
-              />
-              <label>{option}</label>
-            </div>
-          ))}
-        </div>
-      ))}
-      <button type="button" onClick={handleSubmit} className="submit-button">Enviar</button>
-      {score !== null && (
-        <div className="result">
-          <h3>Resultado: {score.toFixed(2)}%</h3>
-          <p>{resultMessage}</p>
-        </div>
+      <div className="question-block">
+        <h4>{currentQuestion.question}</h4>
+        {currentQuestion.options.map((option, oIndex) => (
+          <div
+            key={oIndex}
+            className={`option-block ${isAnswered ? 
+              (selectedOptions.includes(oIndex) ? 
+                (currentQuestion.isMultipleChoice ?
+                  (currentQuestion.correctOption.includes(oIndex) ? 'correct' : 'incorrect') : 
+                  (currentQuestion.correctOption === selectedOptions[0] ? 'correct' : 'incorrect')) : 
+                (currentQuestion.isMultipleChoice ?
+                  (currentQuestion.correctOption.includes(oIndex) ? 'correct-border' : '') : 
+                  (currentQuestion.correctOption === oIndex ? 'correct-border' : ''))) : 
+              (selectedOptions.includes(oIndex) ? 'selected' : '')}`}
+            onClick={() => handleOptionSelect(oIndex)}
+          >
+            {option}
+          </div>
+        ))}
+      </div>
+      {isAnswered ? (
+        <button type="button" onClick={handleNextQuestion} className="next-button">Siguiente</button>
+      ) : (
+        <button type="button" onClick={handleSubmitAnswer} className="submit-button">Responder</button>
       )}
-      <button type="button" onClick={onBack} className="back-button">Volver</button>
+      <button type="button" onClick={onBack} className="back-button">Salir</button>
     </div>
   );
 };

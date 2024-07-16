@@ -17,13 +17,38 @@
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+  padding: 15px;
+  background-color: #f8f8f8;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 18px;
 }
 
-.radio-button {
-  margin-right: 10px;
+.option-block:hover {
+  background-color: #e0e0e0;
 }
 
-.submit-button {
+.selected {
+  background-color: #d0f0d0;
+}
+
+.correct {
+  background-color: #6BBF59;
+  color: white;
+}
+
+.incorrect {
+  background-color: #FF6B6B;
+  color: white;
+}
+
+.correct-border {
+  border: 2px solid #6BBF59;
+  background-color: #f0f0f0;
+}
+
+.submit-button, .next-button {
   background-color: #6BBF59;
   color: white;
   border: none;
@@ -31,9 +56,10 @@
   padding: 10px 20px;
   cursor: pointer;
   font-size: 16px;
+  margin-right: 10px;
 }
 
-.submit-button:hover {
+.submit-button:hover, .next-button:hover {
   background-color: #5AA648;
 }
 
