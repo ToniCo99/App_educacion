@@ -7,7 +7,7 @@ import '../styles/CreateQuiz.css';
 
 const CreateQuizPage = ({ onBack }) => {
   const [title, setTitle] = useState('');
-  const [questions, setQuestions] = useState([{ question: '', options: ['', ''], correctOption: 0 }]);
+  const [questions, setQuestions] = useState([{ question: '', options: ['', ''], correctOption: 0, multiple: false }]);
   const [resultMessages, setResultMessages] = useState({
     lessThan25: '',
     between25And50: '',
@@ -17,7 +17,7 @@ const CreateQuizPage = ({ onBack }) => {
   const [error, setError] = useState('');
 
   const handleAddQuestion = () => {
-    setQuestions([...questions, { question: '', options: ['', ''], correctOption: 0 }]);
+    setQuestions([...questions, { question: '', options: ['', ''], correctOption: 0, multiple: false }]);
   };
 
   const handleRemoveQuestion = (index) => {
@@ -55,6 +55,12 @@ const CreateQuizPage = ({ onBack }) => {
   const handleCorrectOptionChange = (qIndex, oIndex) => {
     const newQuestions = questions.slice();
     newQuestions[qIndex].correctOption = oIndex;
+    setQuestions(newQuestions);
+  };
+
+  const handleMultipleChange = (qIndex) => {
+    const newQuestions = questions.slice();
+    newQuestions[qIndex].multiple = !newQuestions[qIndex].multiple;
     setQuestions(newQuestions);
   };
 
@@ -164,6 +170,17 @@ const CreateQuizPage = ({ onBack }) => {
             </div>
           ))}
           <button type="button" onClick={() => handleAddOption(qIndex)} className="add-option-button">Añadir Opción</button>
+          <div className="form-group multiple-choice-switch">
+            <label>Opción múltiple</label>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={q.multiple}
+                onChange={() => handleMultipleChange(qIndex)}
+              />
+              <span className="slider"></span>
+            </label>
+          </div>
         </div>
       ))}
       <button type="button" onClick={handleAddQuestion} className="add-question-button">Añadir Pregunta</button>
