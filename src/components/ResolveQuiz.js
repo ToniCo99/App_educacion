@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { db } from '../firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
-import '../styles/App.css';
-
+import '../styles/ResolveQuiz.css';
 
 const ResolveQuiz = ({ quizId, onBack }) => {
   const [quiz, setQuiz] = useState(null);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [score, setScore] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [result, setResult] = useState(null);
+  const [responses, setResponses] = useState([]);
+  const [score, setScore] = useState(null);
+  const [resultMessage, setResultMessage] = useState('');
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -18,6 +16,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
 
       if (docSnap.exists()) {
         setQuiz(docSnap.data());
+        setResponses(new Array(docSnap.data().questions.length).fill(null));
       } else {
         console.log('No such document!');
       }
@@ -26,84 +25,85 @@ const ResolveQuiz = ({ quizId, onBack }) => {
     fetchQuiz();
   }, [quizId]);
 
-  const handleOptionClick = (optionIndex) => {
-    setSelectedOption(optionIndex);
-  };
-
-  const handleNextQuestion = () => {
-    if (selectedOption === quiz.questions[currentQuestionIndex].correctOption) {
-      setScore(score + 1);
-    }
-
-    if (currentQuestionIndex < quiz.questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedOption(null);
+  const handleOptionChange = (qIndex, oIndex, isMultipleChoice) => {
+    const newResponses = responses.slice();
+    if (isMultipleChoice) {
+      newResponses[qIndex] = newResponses[qIndex] || [];
+      if (newResponses[qIndex].includes(oIndex)) {
+        newResponses[qIndex] = newResponses[qIndex].filter(index => index !== oIndex);
+      } else {
+        newResponses[qIndex].push(oIndex);
+      }
     } else {
-      calculateResult(score + (selectedOption === quiz.questions[currentQuestionIndex].correctOption ? 1 : 0));
+      newResponses[qIndex] = oIndex;
     }
+    setResponses(newResponses);
   };
 
-  const calculateResult = (finalScore) => {
-    const percentage = (finalScore / quiz.questions.length) * 100;
-    let resultMessage = '';
+  const handleSubmit = () => {
+    let correctCount = 0;
+    quiz.questions.forEach((question, qIndex) => {
+      if (question.isMultipleChoice) {
+        const correctOptions = question.correctOption.sort().toString();
+        const selectedOptions = responses[qIndex] ? responses[qIndex].sort().toString() : '';
+        if (correctOptions === selectedOptions) {
+          correctCount++;
+        }
+      } else if (question.correctOption === responses[qIndex]) {
+        correctCount++;
+      }
+    });
 
-    if (percentage < 25) {
-      resultMessage = quiz.resultMessages.lessThan25;
-    } else if (percentage >= 25 && percentage < 50) {
-      resultMessage = quiz.resultMessages.between25And50;
-    } else if (percentage >= 50 && percentage < 75) {
-      resultMessage = quiz.resultMessages.between50And75;
-    } else if (percentage >= 75 && percentage <= 100) {
-      resultMessage = quiz.resultMessages.between75And100;
+    const totalQuestions = quiz.questions.length;
+    const scorePercentage = (correctCount / totalQuestions) * 100;
+    setScore(scorePercentage);
+
+    let message = '';
+    if (scorePercentage < 25) {
+      message = quiz.resultMessages.lessThan25;
+    } else if (scorePercentage < 50) {
+      message = quiz.resultMessages.between25And50;
+    } else if (scorePercentage < 75) {
+      message = quiz.resultMessages.between50And75;
+    } else {
+      message = quiz.resultMessages.between75And100;
     }
 
-    setResult(`${resultMessage} (Nota: ${percentage.toFixed(2)}%)`);
+    setResultMessage(message);
   };
 
   if (!quiz) {
     return <div>Cargando...</div>;
   }
 
-  if (result) {
-    return (
-      <div className="container">
-        <h1>Resultado</h1>
-        <p>{result}</p>
-        <button onClick={onBack}>Volver al inicio</button>
-      </div>
-    );
-  }
-
   return (
-    <div className="container">
+    <div className="container resolve-quiz-container">
       <h1>{quiz.title}</h1>
-      <div className="progress-bar-container">
-        <div
-          className="progress-bar"
-          style={{ width: `${(currentQuestionIndex / quiz.questions.length) * 100}%` }}
-        />
-      </div>
-      <div className="question-container">
-        <h2>Pregunta {currentQuestionIndex + 1}</h2>
-        <p>{quiz.questions[currentQuestionIndex].question}</p>
-        {quiz.questions[currentQuestionIndex].options.map((option, index) => (
-          <button
-            key={index}
-            className={`option-button ${selectedOption === index ? 'selected' : ''}`}
-            onClick={() => handleOptionClick(index)}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
-      <div className="navigation-buttons">
-        <button onClick={onBack} style={{ backgroundColor: 'red', color: '#FFFFFF' }}>
-          Salir
-        </button>
-        <button onClick={handleNextQuestion} disabled={selectedOption === null}>
-          Siguiente
-        </button>
-      </div>
+      {quiz.questions.map((q, qIndex) => (
+        <div key={qIndex} className="question-block">
+          <h4>{q.question}</h4>
+          {q.options.map((option, oIndex) => (
+            <div key={oIndex} className="option-block">
+              <input
+                type={q.isMultipleChoice ? "checkbox" : "radio"}
+                name={`question-${qIndex}`}
+                checked={q.isMultipleChoice ? responses[qIndex]?.includes(oIndex) : responses[qIndex] === oIndex}
+                onChange={() => handleOptionChange(qIndex, oIndex, q.isMultipleChoice)}
+                className="radio-button"
+              />
+              <label>{option}</label>
+            </div>
+          ))}
+        </div>
+      ))}
+      <button type="button" onClick={handleSubmit} className="submit-button">Enviar</button>
+      {score !== null && (
+        <div className="result">
+          <h3>Resultado: {score.toFixed(2)}%</h3>
+          <p>{resultMessage}</p>
+        </div>
+      )}
+      <button type="button" onClick={onBack} className="back-button">Volver</button>
     </div>
   );
 };

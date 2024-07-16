@@ -7,7 +7,7 @@ import '../styles/CreateQuiz.css';
 
 const CreateQuizPage = ({ onBack }) => {
   const [title, setTitle] = useState('');
-  const [questions, setQuestions] = useState([{ question: '', options: ['', ''], correctOption: 0 }]);
+  const [questions, setQuestions] = useState([{ question: '', options: ['', ''], correctOption: 0, isMultipleChoice: false }]);
   const [resultMessages, setResultMessages] = useState({
     lessThan25: '',
     between25And50: '',
@@ -17,7 +17,7 @@ const CreateQuizPage = ({ onBack }) => {
   const [error, setError] = useState('');
 
   const handleAddQuestion = () => {
-    setQuestions([...questions, { question: '', options: ['', ''], correctOption: 0 }]);
+    setQuestions([...questions, { question: '', options: ['', ''], correctOption: 0, isMultipleChoice: false }]);
   };
 
   const handleRemoveQuestion = (index) => {
@@ -52,9 +52,29 @@ const CreateQuizPage = ({ onBack }) => {
     }
   };
 
-  const handleCorrectOptionChange = (qIndex, oIndex) => {
+  const handleCorrectOptionChange = (qIndex, oIndex, isMultipleChoice) => {
     const newQuestions = questions.slice();
-    newQuestions[qIndex].correctOption = oIndex;
+    if (isMultipleChoice) {
+      newQuestions[qIndex].correctOption = newQuestions[qIndex].correctOption || [];
+      if (newQuestions[qIndex].correctOption.includes(oIndex)) {
+        newQuestions[qIndex].correctOption = newQuestions[qIndex].correctOption.filter(index => index !== oIndex);
+      } else {
+        newQuestions[qIndex].correctOption.push(oIndex);
+      }
+    } else {
+      newQuestions[qIndex].correctOption = oIndex;
+    }
+    setQuestions(newQuestions);
+  };
+
+  const handleMultipleChoiceToggle = (qIndex) => {
+    const newQuestions = questions.slice();
+    newQuestions[qIndex].isMultipleChoice = !newQuestions[qIndex].isMultipleChoice;
+    if (!newQuestions[qIndex].isMultipleChoice) {
+      newQuestions[qIndex].correctOption = 0;  // Reset correct option if switching to single choice
+    } else {
+      newQuestions[qIndex].correctOption = [];  // Initialize as empty array for multiple choice
+    }
     setQuestions(newQuestions);
   };
 
@@ -120,6 +140,14 @@ const CreateQuizPage = ({ onBack }) => {
         <div key={qIndex} className="question-block">
           <div className="question-header">
             <h4>Pregunta {qIndex + 1}</h4>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={q.isMultipleChoice}
+                onChange={() => handleMultipleChoiceToggle(qIndex)}
+              />
+              <span className="slider round"></span>
+            </label>
             {questions.length > 1 && (
               <button type="button" onClick={() => handleRemoveQuestion(qIndex)} className="delete-button">
                 <FontAwesomeIcon icon={faTrashAlt} />
@@ -148,10 +176,10 @@ const CreateQuizPage = ({ onBack }) => {
                 required
               />
               <input
-                type="radio"
+                type={q.isMultipleChoice ? "checkbox" : "radio"}
                 name={`correctOption-${qIndex}`}
-                checked={q.correctOption === oIndex}
-                onChange={() => handleCorrectOptionChange(qIndex, oIndex)}
+                checked={q.isMultipleChoice ? q.correctOption.includes(oIndex) : q.correctOption === oIndex}
+                onChange={() => handleCorrectOptionChange(qIndex, oIndex, q.isMultipleChoice)}
                 className="radio-button"
               />
               {q.options.length > 2 && (
