@@ -1,8 +1,8 @@
+// src/components/EditProfilePage.js
 import React, { useState, useEffect } from 'react';
 import { auth, db, storage } from '../firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import pica from 'pica';
 import '../styles/EditProfilePage.css';
 
 const EditProfilePage = ({ onBack, onProfileUpdate }) => {
@@ -61,14 +61,11 @@ const EditProfilePage = ({ onBack, onProfileUpdate }) => {
         const ctx = canvas.getContext('2d');
         canvas.width = width;
         canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
 
-        pica().resize(img, canvas, {
-          quality: 3,
-        }).then(() => {
-          canvas.toBlob((blob) => {
-            resolve(blob);
-          }, 'image/jpeg', 0.8);
-        }).catch(reject);
+        canvas.toBlob((blob) => {
+          resolve(blob);
+        }, 'image/jpeg', 0.8);
       };
 
       img.onerror = reject;
