@@ -8,7 +8,8 @@ import QuizList from './components/QuizList';
 import CreateQuizPage from './components/CreateQuizPage';
 import ResolveQuiz from './components/ResolveQuiz';
 import EditProfilePage from './components/EditProfilePage';
-import MyCreations from './components/MyCreations';
+import MyQuizzesPage from './components/MyQuizzesPage';
+import MyCreations from './components/MyCreations'; // Importamos MyCreations
 import './styles/GeneralStyles.css';
 import './styles/HeaderStyles.css';
 import './styles/App.css';
@@ -22,7 +23,7 @@ const App = () => {
   const [showSignUp, setShowSignUp] = useState(false);
   const [showCreateQuiz, setShowCreateQuiz] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
-  const [showMyQuizzes, setShowMyQuizzes] = useState(false); // Nuevo estado para "Mis Cuestionarios"
+  const [showMyQuizzes, setShowMyQuizzes] = useState(false); // Estado para "Favoritos"
   const [confirmationMessage, setConfirmationMessage] = useState('');
 
   useEffect(() => {
@@ -65,7 +66,7 @@ const App = () => {
     setSelectedQuizId(null);
     setShowCreateQuiz(false);
     setShowEditProfile(false);
-    setShowMyQuizzes(false); // Ocultar la página de "Mis Cuestionarios"
+    setShowMyQuizzes(false); // Ocultar la página de "Favoritos"
   };
 
   if (!user) {
@@ -92,7 +93,7 @@ const App = () => {
   }
 
   if (showMyQuizzes) {
-    return <MyCreations userId={userId} onQuizSelect={handleQuizSelect} />;
+    return <MyQuizzesPage userId={userId} onBack={handleBack} onQuizSelect={handleQuizSelect} />;
   }
 
   return (
@@ -109,11 +110,11 @@ const App = () => {
       </div>
       <h2>¡Bienvenido, {userName}!</h2>
       <QuizList onQuizSelect={handleQuizSelect} />
+      <MyCreations userId={userId} onQuizSelect={handleQuizSelect} /> {/* Añadimos MyCreations aquí */}
       <div className="button-group">
         <button onClick={() => setShowCreateQuiz(true)} className="create-quiz-button">Crear Cuestionario</button>
-        <button onClick={() => setShowMyQuizzes(true)} className="my-quizzes-button">Mis Cuestionarios</button>
+        <button onClick={() => setShowMyQuizzes(true)} className="my-quizzes-button">Favoritos</button>
       </div>
-      <MyCreations userId={userId} onQuizSelect={handleQuizSelect} /> {/* Añadido MyCreations aquí */}
     </div>
   );
 };
