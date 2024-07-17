@@ -80,3 +80,38 @@
 .back-button:hover {
   background-color: #e67735;
 }
+
+.question-selector {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.question-number {
+  width: 40px;
+  height: 40px;
+  margin: 5px;
+  border: none;
+  border-radius: 50%;
+  background-color: #ccc;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.question-number:hover {
+  background-color: #ddd;
+}
+
+/* ResolveQuiz.css */
+
+
+.answered-correct {
+  background-color: #6BBF59; /* Verde */
+}
+
+.answered-incorrect {
+  background-color: #FF6B6B; /* Rojo */
+}
+
+/* Resto del CSS */

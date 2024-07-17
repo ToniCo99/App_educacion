@@ -30,7 +30,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
   }, [quizId]);
 
   const handleOptionSelect = (oIndex) => {
-    if (!isAnswered) {
+    if (!isAnswered && responses[currentQuestionIndex] === null) {
       if (quiz.questions[currentQuestionIndex].isMultipleChoice) {
         let newSelectedOptions = [...selectedOptions];
         if (newSelectedOptions.includes(oIndex)) {
@@ -52,29 +52,48 @@ const ResolveQuiz = ({ quizId, onBack }) => {
       setResponses(newResponses);
 
       const currentQuestion = quiz.questions[currentQuestionIndex];
+      let isCorrect = false;
       if (currentQuestion.isMultipleChoice) {
         const correctOptions = currentQuestion.correctOption.slice().sort().toString();
         const selectedOptionsSorted = selectedOptions.slice().sort().toString();
-        if (correctOptions === selectedOptionsSorted) {
-          setScore(score + 1);
-        }
-      } else if (currentQuestion.correctOption === selectedOptions[0]) {
+        isCorrect = correctOptions === selectedOptionsSorted;
+        console.log(`Multiple choice - Correct Options: ${correctOptions}, Selected Options: ${selectedOptionsSorted}`);
+      } else {
+        isCorrect = currentQuestion.correctOption === selectedOptions[0];
+        console.log(`Single choice - Correct Option: ${currentQuestion.correctOption}, Selected Option: ${selectedOptions[0]}`);
+      }
+
+      if (isCorrect) {
         setScore(score + 1);
       }
-      
+
       setIsAnswered(true);
+      console.log(`Question ${currentQuestionIndex + 1} - Correct: ${isCorrect}`);
+
+      // Actualiza el estado de la pregunta en el selector
+      const questionSelector = document.getElementById(`question-selector-${currentQuestionIndex}`);
+      if (questionSelector) {
+        questionSelector.classList.add(isCorrect ? 'answered-correct' : 'answered-incorrect');
+      }
+
+      // Verifica si todas las preguntas han sido respondidas
+      const nextUnansweredQuestion = newResponses.findIndex(response => response === null);
+      if (nextUnansweredQuestion === -1) {
+        calculateResults();
+        setShowResults(true);
+      }
     }
   };
 
   const handleNextQuestion = () => {
-    setSelectedOptions([]);
-    setIsAnswered(false);
-    if (currentQuestionIndex < quiz.questions.length - 1) {
+    const nextUnansweredQuestion = responses.findIndex(response => response === null);
+    if (nextUnansweredQuestion !== -1 && nextUnansweredQuestion < quiz.questions.length) {
+      setCurrentQuestionIndex(nextUnansweredQuestion);
+    } else if (currentQuestionIndex < quiz.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-      setShowResults(true);
-      calculateResults();
     }
+    setIsAnswered(false);
+    setSelectedOptions([]);
   };
 
   const calculateResults = () => {
@@ -138,11 +157,39 @@ const ResolveQuiz = ({ quizId, onBack }) => {
         ))}
       </div>
       {isAnswered ? (
-        <button type="button" onClick={handleNextQuestion} className="next-button">Siguiente</button>
+        <button type="button" onClick={handleNextQuestion} className="next-button">Continuar</button>
       ) : (
-        <button type="button" onClick={handleSubmitAnswer} className="submit-button">Responder</button>
+        <button 
+          type="button" 
+          onClick={handleSubmitAnswer} 
+          className="submit-button" 
+          disabled={selectedOptions.length === 0}
+          style={{ backgroundColor: selectedOptions.length > 0 ? '#6BBF59' : '#ccc' }}
+        >
+          Responder
+        </button>
       )}
       <button type="button" onClick={onBack} className="back-button">Salir</button>
+      <div className="question-selector">
+        {quiz.questions.map((_, index) => {
+          const isCorrect = responses[index] !== null &&
+            (quiz.questions[index].isMultipleChoice
+              ? responses[index].slice().sort().toString() === quiz.questions[index].correctOption.slice().sort().toString()
+              : responses[index][0] === quiz.questions[index].correctOption);
+          
+          return (
+            <button
+              key={index}
+              id={`question-selector-${index}`}
+              className={`question-number ${responses[index] !== null ? (isCorrect ? 'answered-correct' : 'answered-incorrect') : ''}`}
+              onClick={() => responses[index] === null && !isAnswered && setCurrentQuestionIndex(index)}
+              disabled={responses[index] !== null}
+            >
+              {index + 1}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };
