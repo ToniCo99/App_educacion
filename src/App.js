@@ -7,7 +7,8 @@ import SignUp from './components/SignUp';
 import QuizList from './components/QuizList';
 import CreateQuizPage from './components/CreateQuizPage';
 import ResolveQuiz from './components/ResolveQuiz';
-import EditProfilePage from './components/EditProfilePage'; // Asegúrate de importar esto
+import EditProfilePage from './components/EditProfilePage';
+import MyQuizzesPage from './components/MyQuizzesPage';
 import './styles/GeneralStyles.css';
 import './styles/HeaderStyles.css';
 import './styles/App.css';
@@ -16,11 +17,12 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [userId, setUserId] = useState('');
   const [userName, setUserName] = useState('');
-  const [userPhotoURL, setUserPhotoURL] = useState(''); // Nuevo estado para la URL de la imagen de perfil
+  const [userPhotoURL, setUserPhotoURL] = useState('');
   const [selectedQuizId, setSelectedQuizId] = useState(null);
   const [showSignUp, setShowSignUp] = useState(false);
   const [showCreateQuiz, setShowCreateQuiz] = useState(false);
-  const [showEditProfile, setShowEditProfile] = useState(false); // Nuevo estado para mostrar la página de edición de perfil
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showMyQuizzes, setShowMyQuizzes] = useState(false); // Nuevo estado para "Mis Cuestionarios"
   const [confirmationMessage, setConfirmationMessage] = useState('');
 
   useEffect(() => {
@@ -33,7 +35,7 @@ const App = () => {
       if (userDoc.exists()) {
         setUserId(auth.currentUser.uid);
         setUserName(userDoc.data().name);
-        setUserPhotoURL(userDoc.data().photoURL || ''); // Obtener la URL de la imagen de perfil
+        setUserPhotoURL(userDoc.data().photoURL || '');
       }
     }
   };
@@ -52,7 +54,7 @@ const App = () => {
     setUser(null);
     setUserId('');
     setUserName('');
-    setUserPhotoURL(''); // Limpiar la URL de la imagen de perfil
+    setUserPhotoURL('');
   };
 
   const handleQuizSelect = (quizId) => {
@@ -62,7 +64,8 @@ const App = () => {
   const handleBack = () => {
     setSelectedQuizId(null);
     setShowCreateQuiz(false);
-    setShowEditProfile(false); // Ocultar la página de edición de perfil
+    setShowEditProfile(false);
+    setShowMyQuizzes(false); // Ocultar la página de "Mis Cuestionarios"
   };
 
   if (!user) {
@@ -85,7 +88,11 @@ const App = () => {
   }
 
   if (showEditProfile) {
-    return <EditProfilePage onBack={handleBack} onProfileUpdate={fetchUserData} />; // Pasa la función para actualizar el perfil
+    return <EditProfilePage onBack={handleBack} onProfileUpdate={fetchUserData} />;
+  }
+
+  if (showMyQuizzes) {
+    return <MyQuizzesPage onBack={handleBack} userId={userId} onQuizSelect={handleQuizSelect} />;
   }
 
   return (
@@ -103,6 +110,7 @@ const App = () => {
       <h2>¡Bienvenido, {userName}!</h2>
       <QuizList onQuizSelect={handleQuizSelect} />
       <button onClick={() => setShowCreateQuiz(true)} className="create-quiz-button">Crear Cuestionario</button>
+      <button onClick={() => setShowMyQuizzes(true)} className="my-quizzes-button">Mis Cuestionarios</button>
     </div>
   );
 };

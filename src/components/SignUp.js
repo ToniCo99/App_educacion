@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { auth, db, defaultProfileImageUrl } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import '../styles/App.css';
@@ -8,14 +8,13 @@ const SignUp = ({ onSignUpSuccess, onBack }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [repeatPassword, setRepeatPassword] = useState('');
   const [error, setError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      setPasswordError('Las contraseñas no coinciden.');
+    if (password !== repeatPassword) {
+      setError('Las contraseñas no coinciden.');
       return;
     }
     try {
@@ -30,7 +29,7 @@ const SignUp = ({ onSignUpSuccess, onBack }) => {
       await setDoc(doc(db, 'users', userCredential.user.uid), {
         name,
         email,
-        photoURL: defaultProfileImageUrl // Agrega la URL de la imagen predeterminada
+        quizzes: [], // Añadir el campo quizzes como un array vacío
       });
       console.log('User document added to Firestore');
       auth.signOut(); // Cerrar sesión inmediatamente después de la creación de la cuenta
@@ -77,15 +76,17 @@ const SignUp = ({ onSignUpSuccess, onBack }) => {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="confirmPassword">Repetir Contraseña</label>
+          <label htmlFor="repeatPassword">Repetir Contraseña</label>
           <input
             type="password"
-            id="confirmPassword"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            id="repeatPassword"
+            value={repeatPassword}
+            onChange={(e) => setRepeatPassword(e.target.value)}
             required
           />
-          {passwordError && <p className="error-message">{passwordError}</p>}
+          {password !== repeatPassword && (
+            <p className="error-message">Las contraseñas no coinciden.</p>
+          )}
         </div>
         <button type="submit">Registrarse</button>
       </form>
