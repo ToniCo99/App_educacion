@@ -9,6 +9,7 @@ import CreateQuizPage from './components/CreateQuizPage';
 import ResolveQuiz from './components/ResolveQuiz';
 import EditProfilePage from './components/EditProfilePage';
 import MyQuizzesPage from './components/MyQuizzesPage';
+import MyCreations from './components/MyCreations';
 import './styles/GeneralStyles.css';
 import './styles/HeaderStyles.css';
 import './styles/App.css';
@@ -22,7 +23,7 @@ const App = () => {
   const [showSignUp, setShowSignUp] = useState(false);
   const [showCreateQuiz, setShowCreateQuiz] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
-  const [showMyQuizzes, setShowMyQuizzes] = useState(false); // Nuevo estado para "Mis Cuestionarios"
+  const [showMyQuizzes, setShowMyQuizzes] = useState(false);
   const [confirmationMessage, setConfirmationMessage] = useState('');
 
   useEffect(() => {
@@ -65,7 +66,7 @@ const App = () => {
     setSelectedQuizId(null);
     setShowCreateQuiz(false);
     setShowEditProfile(false);
-    setShowMyQuizzes(false); // Ocultar la página de "Mis Cuestionarios"
+    setShowMyQuizzes(false);
   };
 
   if (!user) {
@@ -109,6 +110,7 @@ const App = () => {
       </div>
       <h2>¡Bienvenido, {userName}!</h2>
       <QuizList onQuizSelect={handleQuizSelect} />
+      <MyCreations userId={userId} onQuizSelect={handleQuizSelect} /> {/* Incluye el componente aquí */}
       <button onClick={() => setShowCreateQuiz(true)} className="create-quiz-button">Crear Cuestionario</button>
       <button onClick={() => setShowMyQuizzes(true)} className="my-quizzes-button">Mis Cuestionarios</button>
     </div>

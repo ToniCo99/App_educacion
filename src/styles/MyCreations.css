@@ -1,0 +1,125 @@
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #FFFFFF;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .card {
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #F5F5F5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.3s;
+  }
+  
+  .card-content {
+    flex-grow: 1;
+    cursor: pointer;
+  }
+  
+  .card:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .card h4 {
+    margin-top: 0;
+  }
+  
+  .card p {
+    margin: 0;
+  }
+  
+  .notification {
+    color: #FFFFFF;
+    background-color: #6BBF59;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .share-button, .delete-button {
+    background: none;
+    border: none;
+    color: #FF8C42;
+    cursor: pointer;
+    font-size: 18px;
+  }
+  
+  .share-button:hover, .delete-button:hover {
+    color: #e67735;
+  }
+  
+  h2 {
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
+  
+  .confirm-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #FFFFFF;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  .confirm-dialog p {
+    margin-bottom: 20px;
+  }
+  
+  .confirm-button, .cancel-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 0 10px;
+  }
+  
+  .confirm-button {
+    background-color: #6BBF59;
+    color: #FFFFFF;
+  }
+  
+  .confirm-button:hover {
+    background-color: #5aa84a;
+  }
+  
+  .cancel-button {
+    background-color: #FF8C42;
+    color: #FFFFFF;
+  }
+  
+  .cancel-button:hover {
+    background-color: #e67735;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
