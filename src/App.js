@@ -9,6 +9,7 @@ import CreateQuizPage from './components/CreateQuizPage';
 import ResolveQuiz from './components/ResolveQuiz';
 import EditProfilePage from './components/EditProfilePage';
 import MyQuizzesPage from './components/MyQuizzesPage';
+import MyCreations from './components/MyCreations'; // Importa MyCreations
 import './styles/GeneralStyles.css';
 import './styles/HeaderStyles.css';
 import './styles/App.css';
@@ -118,6 +119,7 @@ const App = () => {
       </div>
       <h2>¡Bienvenido, {userName}!</h2>
       <QuizList onQuizSelect={handleQuizSelect} />
+      <MyCreations userId={userId} onQuizSelect={handleQuizSelect} /> {/* Agrega MyCreations aquí */}
       <div className="button-group">
         <button onClick={() => setShowCreateQuiz(true)} className="create-quiz-button">Crear Cuestionario</button>
         <button onClick={() => setShowMyQuizzes(true)} className="my-quizzes-button">Mis Cuestionarios</button>

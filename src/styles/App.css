@@ -1,7 +1,6 @@
 /* Import all other CSS files */
 @import './GeneralStyles.css';
 @import './HeaderStyles.css';
-@import './ButtonStyles.css';
 @import './FormStyles.css';
 @import './QuizStyles.css'; 
 @import './ResolveQuiz.css'; 
