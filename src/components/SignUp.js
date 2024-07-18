@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { auth, db } from '../firebaseConfig';
-import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { auth, db, defaultProfileImageUrl } from '../firebaseConfig';
+import { createUserWithEmailAndPassword, sendEmailVerification, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import '../styles/App.css';
 
 const SignUp = ({ onSignUpSuccess, onBack }) => {
@@ -29,6 +29,7 @@ const SignUp = ({ onSignUpSuccess, onBack }) => {
       await setDoc(doc(db, 'users', userCredential.user.uid), {
         name,
         email,
+        photoURL: defaultProfileImageUrl, // Asignar la imagen de perfil predeterminada
         quizzes: [], // Añadir el campo quizzes como un array vacío
       });
       console.log('User document added to Firestore');
@@ -36,6 +37,33 @@ const SignUp = ({ onSignUpSuccess, onBack }) => {
       onSignUpSuccess();
     } catch (error) {
       console.error('Error during sign up:', error);
+      setError(error.message);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Verifica si el usuario ya existe en Firestore
+      const userDoc = doc(db, 'users', user.uid);
+      const userSnapshot = await getDoc(userDoc);
+
+      if (!userSnapshot.exists()) {
+        // Si el usuario no existe, crea un nuevo documento
+        await setDoc(userDoc, {
+          name: user.displayName,
+          email: user.email,
+          photoURL: defaultProfileImageUrl, // Asignar la imagen de perfil predeterminada
+          quizzes: [], // Añadir el campo quizzes como un array vacío
+        });
+      }
+      
+      onSignUpSuccess();
+    } catch (error) {
+      console.error('Error during Google sign-in:', error);
       setError(error.message);
     }
   };
@@ -91,6 +119,9 @@ const SignUp = ({ onSignUpSuccess, onBack }) => {
         <button type="submit">Registrarse</button>
       </form>
       <button type="button" onClick={onBack}>Volver</button>
+      <button type="button" onClick={handleGoogleSignIn} className="google-sign-in-button">
+        Registrarse con Google
+      </button>
     </div>
   );
 };

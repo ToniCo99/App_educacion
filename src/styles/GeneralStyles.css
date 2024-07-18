@@ -260,6 +260,26 @@ input[type="text"], input[type="email"], input[type="password"] {
   outline: none;
 }
 
+.google-sign-in-button {
+  font-family: 'Poppins', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #FFFFFF;
+  background-color: #DB4437; /* Color típico de Google */
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  margin-top: 10px;
+}
+
+.google-sign-in-button:hover {
+  background-color: #c33d2e;
+  transform: scale(1.05);
+}
+
+
 .search-button {
   padding: 10px 20px;
   font-size: 16px;
@@ -306,4 +326,23 @@ input[type="text"], input[type="email"], input[type="password"] {
 
 .card p {
   margin: 0;
+}
+
+.google-sign-in-button {
+  font-family: 'Poppins', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #FFFFFF;
+  background-color: #4285F4; /* Azul de Google */
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  margin-top: 10px;
+}
+
+.google-sign-in-button:hover {
+  background-color: #357AE8;
+  transform: scale(1.05);
 }
