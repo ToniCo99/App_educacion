@@ -54,7 +54,7 @@
   
   .search-input {
     flex: 1 1 300px;
-    padding: 8px; /* Reducir el padding para que no sea tan alto */
+    padding: 5px; /* Reducir aún más el padding */
     margin-bottom: 10px;
     font-size: 16px;
     border: 1px solid #ccc;
@@ -63,7 +63,7 @@
   }
   
   .search-button {
-    padding: 8px 16px; /* Reducir el padding para que no sea tan alto */
+    padding: 5px 16px; /* Reducir aún más el padding */
     font-size: 16px;
     font-weight: 600;
     color: #FFFFFF;
@@ -91,8 +91,8 @@
     }
   
     .search-input {
-      padding: 6px; /* Ajuste el relleno para que no sea tan alto en móviles */
-      font-size: 14px; /* Ajuste el tamaño de la fuente para móviles */
+      
+      font-size: 14px; /* Ajustar el tamaño de la fuente para móviles */
     }
   }
   

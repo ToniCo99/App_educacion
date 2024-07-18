@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebaseConfig';
-import { collection, getDocs, orderBy, query, limit, doc, getDoc, where } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, limit, doc, getDoc } from 'firebase/firestore';
 import '../styles/QuizList.css';
-
 
 const QuizList = ({ onQuizSelect }) => {
   const [quizzes, setQuizzes] = useState([]);
@@ -43,49 +42,79 @@ const QuizList = ({ onQuizSelect }) => {
     fetchQuizzes();
   }, []);
 
+  useEffect(() => {
+    const handleSearch = async () => {
+      if (searchTerm.trim() === '') {
+        const q = query(collection(db, 'quizzes'), orderBy('createdAt', 'desc'), limit(5));
+        const querySnapshot = await getDocs(q);
+        const quizzesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setQuizzes(quizzesData);
+
+        const creatorPromises = quizzesData.map(async quiz => {
+          const creatorDoc = await getDoc(doc(db, 'users', quiz.creator));
+          if (creatorDoc.exists()) {
+            return { [quiz.creator]: creatorDoc.data() };
+          }
+          return null;
+        });
+
+        const creatorData = await Promise.all(creatorPromises);
+        const creatorsMap = creatorData.reduce((acc, curr) => {
+          if (curr) {
+            return { ...acc, ...curr };
+          }
+          return acc;
+        }, {});
+
+        setCreators(creatorsMap);
+        return;
+      }
+
+      const normalizedSearchTerm = normalizeText(searchTerm);
+
+      try {
+        const q = query(collection(db, 'quizzes'), orderBy('title'));
+        const querySnapshot = await getDocs(q);
+        const searchResults = querySnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(quiz => normalizeText(quiz.title).includes(normalizedSearchTerm));
+
+        setQuizzes(searchResults);
+
+        const creatorPromises = searchResults.map(async quiz => {
+          const creatorDoc = await getDoc(doc(db, 'users', quiz.creator));
+          if (creatorDoc.exists()) {
+            return { [quiz.creator]: creatorDoc.data() };
+          }
+          return null;
+        });
+
+        const creatorData = await Promise.all(creatorPromises);
+        const creatorsMap = creatorData.reduce((acc, curr) => {
+          if (curr) {
+            return { ...acc, ...curr };
+          }
+          return acc;
+        }, {});
+
+        setCreators(creatorsMap);
+      } catch (error) {
+        console.error('Error searching quizzes:', error);
+      }
+    };
+
+    const delayDebounceFn = setTimeout(() => {
+      handleSearch();
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
+
   const normalizeText = (text) => {
     return text
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '');
-  };
-
-  const handleSearch = async () => {
-    if (searchTerm.trim() === '') {
-      return;
-    }
-
-    const normalizedSearchTerm = normalizeText(searchTerm);
-
-    try {
-      const q = query(collection(db, 'quizzes'), orderBy('title'));
-      const querySnapshot = await getDocs(q);
-      const searchResults = querySnapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(quiz => normalizeText(quiz.title).includes(normalizedSearchTerm));
-
-      setQuizzes(searchResults);
-
-      const creatorPromises = searchResults.map(async quiz => {
-        const creatorDoc = await getDoc(doc(db, 'users', quiz.creator));
-        if (creatorDoc.exists()) {
-          return { [quiz.creator]: creatorDoc.data() };
-        }
-        return null;
-      });
-
-      const creatorData = await Promise.all(creatorPromises);
-      const creatorsMap = creatorData.reduce((acc, curr) => {
-        if (curr) {
-          return { ...acc, ...curr };
-        }
-        return acc;
-      }, {});
-
-      setCreators(creatorsMap);
-    } catch (error) {
-      console.error('Error searching quizzes:', error);
-    }
   };
 
   return (
@@ -97,10 +126,8 @@ const QuizList = ({ onQuizSelect }) => {
           placeholder="Buscar cuestionario"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           className="search-input"
         />
-        <button onClick={handleSearch} className="search-button">Buscar</button>
       </div>
       <ul>
         {quizzes.map(quiz => (
