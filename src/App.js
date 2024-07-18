@@ -9,7 +9,6 @@ import CreateQuizPage from './components/CreateQuizPage';
 import ResolveQuiz from './components/ResolveQuiz';
 import EditProfilePage from './components/EditProfilePage';
 import MyQuizzesPage from './components/MyQuizzesPage';
-import MyCreations from './components/MyCreations'; // Importamos MyCreations
 import './styles/GeneralStyles.css';
 import './styles/HeaderStyles.css';
 import './styles/App.css';
@@ -23,18 +22,26 @@ const App = () => {
   const [showSignUp, setShowSignUp] = useState(false);
   const [showCreateQuiz, setShowCreateQuiz] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
-  const [showMyQuizzes, setShowMyQuizzes] = useState(false); // Estado para "Favoritos"
+  const [showMyQuizzes, setShowMyQuizzes] = useState(false);
   const [confirmationMessage, setConfirmationMessage] = useState('');
 
   useEffect(() => {
-    fetchUserData();
-  }, [user]);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+        fetchUserData(user);
+      } else {
+        setUser(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
-  const fetchUserData = async () => {
-    if (auth.currentUser) {
-      const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+  const fetchUserData = async (authUser) => {
+    if (authUser) {
+      const userDoc = await getDoc(doc(db, 'users', authUser.uid));
       if (userDoc.exists()) {
-        setUserId(auth.currentUser.uid);
+        setUserId(authUser.uid);
         setUserName(userDoc.data().name);
         setUserPhotoURL(userDoc.data().photoURL || '');
       }
@@ -43,6 +50,7 @@ const App = () => {
 
   const handleLoginSuccess = () => {
     setUser(auth.currentUser);
+    fetchUserData(auth.currentUser);
   };
 
   const handleSignUpSuccess = () => {
@@ -66,7 +74,7 @@ const App = () => {
     setSelectedQuizId(null);
     setShowCreateQuiz(false);
     setShowEditProfile(false);
-    setShowMyQuizzes(false); // Ocultar la página de "Favoritos"
+    setShowMyQuizzes(false);
   };
 
   if (!user) {
@@ -89,11 +97,11 @@ const App = () => {
   }
 
   if (showEditProfile) {
-    return <EditProfilePage onBack={handleBack} onProfileUpdate={fetchUserData} />;
+    return <EditProfilePage onBack={handleBack} onProfileUpdate={() => fetchUserData(auth.currentUser)} />;
   }
 
   if (showMyQuizzes) {
-    return <MyQuizzesPage userId={userId} onBack={handleBack} onQuizSelect={handleQuizSelect} />;
+    return <MyQuizzesPage onBack={handleBack} userId={userId} onQuizSelect={handleQuizSelect} />;
   }
 
   return (
@@ -110,10 +118,9 @@ const App = () => {
       </div>
       <h2>¡Bienvenido, {userName}!</h2>
       <QuizList onQuizSelect={handleQuizSelect} />
-      <MyCreations userId={userId} onQuizSelect={handleQuizSelect} /> {/* Añadimos MyCreations aquí */}
       <div className="button-group">
         <button onClick={() => setShowCreateQuiz(true)} className="create-quiz-button">Crear Cuestionario</button>
-        <button onClick={() => setShowMyQuizzes(true)} className="my-quizzes-button">Favoritos</button>
+        <button onClick={() => setShowMyQuizzes(true)} className="my-quizzes-button">Mis Cuestionarios</button>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 // src/firebaseConfig.js
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
@@ -20,5 +20,15 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 const defaultProfileImageUrl = "https://firebasestorage.googleapis.com/v0/b/education-app-23bb7.appspot.com/o/default_img%2Fdefault.png?alt=media&token=aebeee37-9f53-453b-aeff-be191384902a";
+
+// Configurar la persistencia de sesión
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    // Persistencia establecida con éxito
+  })
+  .catch((error) => {
+    console.error('Error setting persistence:', error);
+  });
+
 
 export { auth, db, storage, defaultProfileImageUrl };
