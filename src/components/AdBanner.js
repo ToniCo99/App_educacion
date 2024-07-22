@@ -5,13 +5,13 @@ const AdBanner = () => {
     const atOptions = {
       'key': '1f3a364caeb5808a02afe76486f86dcc',
       'format': 'iframe',
-      'height': 90,
-      'width': 728,
+      'height': 50,
+      'width': 320,
       'params': {}
     };
     const script = document.createElement('script');
     script.type = 'text/javascript';
-    script.src = '//anddescendedcocoa.com/1f3a364caeb5808a02afe76486f86dcc/invoke.js';
+    script.src = 'https://anddescendedcocoa.com/1f3a364caeb5808a02afe76486f86dcc/invoke.js';
     script.async = true;
     document.getElementById('ad-banner').appendChild(script);
   }, []);
