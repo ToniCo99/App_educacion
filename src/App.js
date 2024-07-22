@@ -130,7 +130,7 @@ const App = () => {
       <MyCreations userId={userId} onQuizSelect={handleQuizSelect} /> {/* Agrega MyCreations aquí */}
       <div className="button-group">
         <button onClick={() => setShowCreateQuiz(true)} className="create-quiz-button">Crear Cuestionario</button>
-        <button onClick={() => setShowMyQuizzes(true)} className="my-quizzes-button">Mis Cuestionarios</button>
+        <button onClick={() => setShowMyQuizzes(true)} className="my-quizzes-button">Favoritos</button>
       </div>
     </div>
   );
