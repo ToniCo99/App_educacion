@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { db } from '../firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 import '../styles/ResolveQuiz.css';
+import AdBanner from './AdBanner'; // Import the AdBanner component
 
 const ResolveQuiz = ({ quizId, onBack }) => {
   const [quiz, setQuiz] = useState(null);
@@ -121,6 +122,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
   if (showResults) {
     return (
       <div className="container resolve-quiz-container">
+        <AdBanner />
         <h1>{quiz.title}</h1>
         <div className="result">
           <h3>Resultado: {((score / quiz.questions.length) * 100).toFixed(2)}%</h3>
@@ -135,6 +137,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
 
   return (
     <div className="container resolve-quiz-container">
+      <AdBanner />
       <h1>{quiz.title}</h1>
       <div className="question-block">
         <h4>{currentQuestion.question}</h4>
