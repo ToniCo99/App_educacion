@@ -1,0 +1,31 @@
+.progress-bar-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .progress-bar {
+    width: 80%;
+    max-width: 400px;
+    height: 10px;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  
+  .progress-bar-fill {
+    width: 0;
+    height: 100%;
+    background-color: #6BBF59;
+    animation: fillProgress 2s ease-in-out infinite;
+  }
+  
+  @keyframes fillProgress {
+    0% { width: 0; }
+    50% { width: 100%; }
+    100% { width: 0; }
+  }
+  

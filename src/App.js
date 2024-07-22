@@ -10,6 +10,7 @@ import ResolveQuiz from './components/ResolveQuiz';
 import EditProfilePage from './components/EditProfilePage';
 import MyQuizzesPage from './components/MyQuizzesPage';
 import MyCreations from './components/MyCreations'; // Importa MyCreations
+import ProgressBar from './components/ProgressBar'; // Importa ProgressBar
 import './styles/GeneralStyles.css';
 import './styles/HeaderStyles.css';
 import './styles/App.css';
@@ -25,6 +26,7 @@ const App = () => {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showMyQuizzes, setShowMyQuizzes] = useState(false);
   const [confirmationMessage, setConfirmationMessage] = useState('');
+  const [loading, setLoading] = useState(true); // Nuevo estado de carga
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -33,6 +35,7 @@ const App = () => {
         fetchUserData(user);
       } else {
         setUser(null);
+        setLoading(false); // Deja de cargar si no hay usuario
       }
     });
     return () => unsubscribe();
@@ -47,6 +50,7 @@ const App = () => {
         setUserPhotoURL(userDoc.data().photoURL || '');
       }
     }
+    setLoading(false); // Deja de cargar cuando se obtienen los datos del usuario
   };
 
   const handleLoginSuccess = () => {
@@ -77,6 +81,10 @@ const App = () => {
     setShowEditProfile(false);
     setShowMyQuizzes(false);
   };
+
+  if (loading) {
+    return <ProgressBar />; // Mostrar la barra de progreso mientras se carga
+  }
 
   if (!user) {
     return showSignUp ? (
@@ -115,7 +123,7 @@ const App = () => {
           className="profile-icon"
           onClick={() => setShowEditProfile(true)}
         />
-        <button onClick={handleLogout}>Cerrar Sesión</button>
+        <button className="logout-button" onClick={handleLogout}>Cerrar Sesión</button>
       </div>
       <h2>¡Bienvenido, {userName}!</h2>
       <QuizList onQuizSelect={handleQuizSelect} />
