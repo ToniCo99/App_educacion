@@ -3,34 +3,22 @@ import React, { useEffect } from 'react';
 const AdBanner = () => {
   useEffect(() => {
     const atOptions = {
-      'key': '1f3a364caeb5808a02afe76486f86dcc',
-      'format': 'iframe',
-      'height': 50,
-      'width': 320,
-      'params': {}
+      key: '1f3a364caeb5808a02afe76486f86dcc',
+      format: 'iframe',
+      height: 50,
+      width: 320,
+      params: {}
     };
 
-    const scriptContent = `
-      atOptions = {
-        'key': '${atOptions.key}',
-        'format': '${atOptions.format}',
-        'height': ${atOptions.height},
-        'width': ${atOptions.width},
-        'params': {}
-      };
-      (function() {
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = 'https://anddescendedcocoa.com/1f3a364caeb5808a02afe76486f86dcc/invoke.js';
-        script.async = true;
-        document.getElementById('ad-container').appendChild(script);
-      })();
-    `;
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.async = true;
+    script.src = `https://anddescendedcocoa.com/${atOptions.key}/invoke.js`;
 
-    const scriptElement = document.createElement('script');
-    scriptElement.type = 'text/javascript';
-    scriptElement.innerHTML = scriptContent;
-    document.getElementById('ad-container').appendChild(scriptElement);
+    const container = document.getElementById('ad-container');
+    if (container) {
+      container.appendChild(script);
+    }
   }, []);
 
   return (
