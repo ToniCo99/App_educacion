@@ -10,13 +10,22 @@ const AdBanner = () => {
       params: {}
     };
 
+    const scriptContent = `
+      atOptions = ${JSON.stringify(atOptions)};
+      document.write('<scr' + 'ipt type="text/javascript" src="https://anddescendedcocoa.com/${atOptions.key}/invoke.js"></scr' + 'ipt>');
+    `;
+
     const script = document.createElement('script');
     script.type = 'text/javascript';
     script.async = true;
-    script.src = `https://anddescendedcocoa.com/${atOptions.key}/invoke.js`;
+    script.innerHTML = scriptContent;
 
     script.onload = () => {
       console.log('Ad script loaded successfully');
+      const adContainer = document.getElementById('ad-container');
+      if (adContainer) {
+        console.log('Ad container content:', adContainer.innerHTML);
+      }
     };
 
     script.onerror = (error) => {
