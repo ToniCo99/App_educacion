@@ -1,29 +1,19 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 const AdBanner = () => {
-  useEffect(() => {
-    const atOptions = {
-      key: '1f3a364caeb5808a02afe76486f86dcc',
-      format: 'iframe',
-      height: 50,
-      width: 320,
-      params: {}
-    };
-
-    const script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.async = true;
-    script.src = `https://anddescendedcocoa.com/${atOptions.key}/invoke.js`;
-
-    const container = document.getElementById('ad-container');
-    if (container) {
-      container.appendChild(script);
-    }
-  }, []);
+  const adSrc = `https://anddescendedcocoa.com/1f3a364caeb5808a02afe76486f86dcc/invoke.js`;
 
   return (
-    <div id="ad-container" style={{ textAlign: 'center', margin: '10px 0' }}>
-      <p>Loading Ad...</p>
+    <div style={{ textAlign: 'center', margin: '10px 0' }}>
+      <iframe
+        src={adSrc}
+        width="320"
+        height="50"
+        style={{ border: 'none', overflow: 'hidden' }}
+        scrolling="no"
+        frameBorder="0"
+        title="Ad"
+      ></iframe>
     </div>
   );
 };
