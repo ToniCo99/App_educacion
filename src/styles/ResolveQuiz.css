@@ -97,6 +97,9 @@
   color: white;
   cursor: pointer;
   font-size: 16px;
+  display: flex; /* Añadido */
+  align-items: center; /* Añadido */
+  justify-content: center; /* Añadido */
 }
 
 .question-number:hover {
