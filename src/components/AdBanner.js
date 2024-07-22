@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 const AdBanner = () => {
   useEffect(() => {
     const atOptions = {
-      'key': '9888b0aedf6f669c7dfb18958c8e54d6',
+      'key': '1f3a364caeb5808a02afe76486f86dcc',
       'format': 'iframe',
       'height': 90,
       'width': 728,
@@ -11,7 +11,7 @@ const AdBanner = () => {
     };
     const script = document.createElement('script');
     script.type = 'text/javascript';
-    script.src = '//www.topcreativeformat.com/9888b0aedf6f669c7dfb18958c8e54d6/invoke.js';
+    script.src = '//anddescendedcocoa.com/1f3a364caeb5808a02afe76486f86dcc/invoke.js';
     script.async = true;
     document.getElementById('ad-banner').appendChild(script);
   }, []);
