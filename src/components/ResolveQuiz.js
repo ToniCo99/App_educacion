@@ -96,6 +96,12 @@ const ResolveQuiz = ({ quizId, onBack }) => {
     setSelectedOptions([]);
   };
 
+  const handleQuestionSelect = (index) => {
+    setCurrentQuestionIndex(index);
+    setIsAnswered(responses[index] !== null);
+    setSelectedOptions(responses[index] || []);
+  };
+
   const calculateResults = () => {
     const totalQuestions = quiz.questions.length;
     const scorePercentage = (score / totalQuestions) * 100;
@@ -182,8 +188,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
               key={index}
               id={`question-selector-${index}`}
               className={`question-number ${responses[index] !== null ? (isCorrect ? 'answered-correct' : 'answered-incorrect') : ''}`}
-              onClick={() => responses[index] === null && !isAnswered && setCurrentQuestionIndex(index)}
-              disabled={responses[index] !== null}
+              onClick={() => handleQuestionSelect(index)}
             >
               {index + 1}
             </button>
