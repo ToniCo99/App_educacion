@@ -12,6 +12,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState(0);
   const [resultMessage, setResultMessage] = useState('');
+  const [reviewAnswers, setReviewAnswers] = useState(false);
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -120,11 +121,18 @@ const ResolveQuiz = ({ quizId, onBack }) => {
     setResultMessage(message);
   };
 
+  const handleReviewAnswers = () => {
+    setReviewAnswers(true);
+    setCurrentQuestionIndex(0);
+    setIsAnswered(true);
+    setSelectedOptions(responses[0] || []);
+  };
+
   if (!quiz) {
     return <div>Cargando...</div>;
   }
 
-  if (showResults) {
+  if (showResults && !reviewAnswers) {
     return (
       <div className="container resolve-quiz-container">
         <h1>{quiz.title}</h1>
@@ -133,6 +141,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
           <p>{resultMessage}</p>
         </div>
         <button type="button" onClick={onBack} className="back-button">Volver</button>
+        <button type="button" onClick={handleReviewAnswers} className="review-button">Revisar respuestas</button>
       </div>
     );
   }
@@ -163,7 +172,9 @@ const ResolveQuiz = ({ quizId, onBack }) => {
         ))}
       </div>
       {isAnswered ? (
-        <button type="button" onClick={handleNextQuestion} className="next-button">Continuar</button>
+        !reviewAnswers && (
+          <button type="button" onClick={handleNextQuestion} className="next-button">Continuar</button>
+        )
       ) : (
         <button 
           type="button" 
