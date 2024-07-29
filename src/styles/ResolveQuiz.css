@@ -117,4 +117,16 @@
   background-color: #FF6B6B; /* Rojo */
 }
 
+.kofi-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.kofi-container #kofi-button {
+  max-width: 100%;
+  height: auto;
+}
+
 /* Resto del CSS */

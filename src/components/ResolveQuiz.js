@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { db } from '../firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 import '../styles/ResolveQuiz.css';
+import KoFiButton from './KoFiButton'; // Ensure this path is correct
 
 const ResolveQuiz = ({ quizId, onBack }) => {
   const [quiz, setQuiz] = useState(null);
@@ -58,10 +59,8 @@ const ResolveQuiz = ({ quizId, onBack }) => {
         const correctOptions = currentQuestion.correctOption.slice().sort().toString();
         const selectedOptionsSorted = selectedOptions.slice().sort().toString();
         isCorrect = correctOptions === selectedOptionsSorted;
-        console.log(`Multiple choice - Correct Options: ${correctOptions}, Selected Options: ${selectedOptionsSorted}`);
       } else {
         isCorrect = currentQuestion.correctOption === selectedOptions[0];
-        console.log(`Single choice - Correct Option: ${currentQuestion.correctOption}, Selected Option: ${selectedOptions[0]}`);
       }
 
       if (isCorrect) {
@@ -69,15 +68,12 @@ const ResolveQuiz = ({ quizId, onBack }) => {
       }
 
       setIsAnswered(true);
-      console.log(`Question ${currentQuestionIndex + 1} - Correct: ${isCorrect}`);
 
-      // Actualiza el estado de la pregunta en el selector
       const questionSelector = document.getElementById(`question-selector-${currentQuestionIndex}`);
       if (questionSelector) {
         questionSelector.classList.add(isCorrect ? 'answered-correct' : 'answered-incorrect');
       }
 
-      // Verifica si todas las preguntas han sido respondidas
       const nextUnansweredQuestion = newResponses.findIndex(response => response === null);
       if (nextUnansweredQuestion === -1) {
         calculateResults();
@@ -142,6 +138,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
         </div>
         <button type="button" onClick={onBack} className="back-button">Volver</button>
         <button type="button" onClick={handleReviewAnswers} className="review-button">Revisar respuestas</button>
+        <KoFiButton />
       </div>
     );
   }
@@ -206,6 +203,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
           );
         })}
       </div>
+      <KoFiButton />
     </div>
   );
 };
