@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { db, auth } from '../firebaseConfig';
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faThumbsUp, faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faThumbsUp, faHeart, faTrophy } from '@fortawesome/free-solid-svg-icons';
 import '../styles/ResolveQuiz.css';
 import KoFiButton from './KoFiButton';
 
@@ -18,6 +18,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
   const [reviewAnswers, setReviewAnswers] = useState(false);
   const [liked, setLiked] = useState(false);
   const [favorited, setFavorited] = useState(false);
+  const [topUsers, setTopUsers] = useState([]);
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -193,6 +194,26 @@ const ResolveQuiz = ({ quizId, onBack }) => {
         userBestScores[userId] = scorePercentage;
         await updateDoc(quizRef, { userBestScores });
       }
+      
+      // Obtener y ordenar las mejores puntuaciones
+      const sortedBestScores = Object.entries(userBestScores)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 3);
+      
+      // Obtener datos de usuario para el podio
+      const topUsersData = await Promise.all(
+        sortedBestScores.map(async ([uid, score]) => {
+          const userDoc = await getDoc(doc(db, 'users', uid));
+          return userDoc.exists() ? { uid, score, ...userDoc.data() } : null;
+        })
+      );
+
+      // Manejar el caso de usuarios insuficientes
+      while (topUsersData.length < 3) {
+        topUsersData.push(null);
+      }
+
+      setTopUsers(topUsersData);
     }
   };
 
@@ -275,6 +296,53 @@ const ResolveQuiz = ({ quizId, onBack }) => {
         <div className="result">
           <h3>Resultado: {((score / quiz.questions.length) * 100).toFixed(2)}%</h3>
           <p>{resultMessage}</p>
+        </div>
+        <div className="podium">
+          <div className="podium-place">
+            <FontAwesomeIcon icon={faTrophy} className="trophy gold" />
+            {topUsers[0] ? (
+              <>
+                <img src={topUsers[0].photoURL} alt="User" className="user-icon" />
+                <p>{topUsers[0].name}</p>
+                <p>{topUsers[0].score.toFixed(2)}%</p>
+              </>
+            ) : (
+              <>
+                <img src="https://firebasestorage.googleapis.com/v0/b/education-app-23bb7.appspot.com/o/default_img%2Fdefault.png?alt=media&token=aebeee37-9f53-453b-aeff-be191384902a" alt="Default User" className="user-icon" />
+                <p>Vacante</p>
+              </>
+            )}
+          </div>
+          <div className="podium-place">
+            <FontAwesomeIcon icon={faTrophy} className="trophy silver" />
+            {topUsers[1] ? (
+              <>
+                <img src={topUsers[1].photoURL} alt="User" className="user-icon" />
+                <p>{topUsers[1].name}</p>
+                <p>{topUsers[1].score.toFixed(2)}%</p>
+              </>
+            ) : (
+              <>
+                <img src="https://firebasestorage.googleapis.com/v0/b/education-app-23bb7.appspot.com/o/default_img%2Fdefault.png?alt=media&token=aebeee37-9f53-453b-aeff-be191384902a" alt="Default User" className="user-icon" />
+                <p>Vacante</p>
+              </>
+            )}
+          </div>
+          <div className="podium-place">
+            <FontAwesomeIcon icon={faTrophy} className="trophy bronze" />
+            {topUsers[2] ? (
+              <>
+                <img src={topUsers[2].photoURL} alt="User" className="user-icon" />
+                <p>{topUsers[2].name}</p>
+                <p>{topUsers[2].score.toFixed(2)}%</p>
+              </>
+            ) : (
+              <>
+                <img src="https://firebasestorage.googleapis.com/v0/b/education-app-23bb7.appspot.com/o/default_img%2Fdefault.png?alt=media&token=aebeee37-9f53-453b-aeff-be191384902a" alt="Default User" className="user-icon" />
+                <p>Vacante</p>
+              </>
+            )}
+          </div>
         </div>
         <div className="button-group">
           <button type="button" onClick={onBack} className="back-button">Volver</button>
