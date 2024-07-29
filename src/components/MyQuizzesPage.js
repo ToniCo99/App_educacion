@@ -62,6 +62,12 @@ const MyQuizzesPage = ({ onBack, userId, onQuizSelect }) => {
       await updateDoc(userDocRef, {
         quizzes: arrayRemove(quizIdToRemove),
       });
+
+      const quizRef = doc(db, 'quizzes', quizIdToRemove);
+      await updateDoc(quizRef, {
+        favorites: arrayRemove(userId),
+      });
+
       setQuizzes(quizzes.filter((quiz) => quiz.id !== quizIdToRemove));
     } catch (error) {
       console.error('Error removing quiz:', error);
