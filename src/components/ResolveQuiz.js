@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { db } from '../firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
+import { db, auth } from '../firebaseConfig'; // Importa auth
+import { doc, getDoc, updateDoc } from 'firebase/firestore'; // Importa updateDoc
 import '../styles/ResolveQuiz.css';
-import KoFiButton from './KoFiButton'; // Ensure this path is correct
+import KoFiButton from './KoFiButton'; // Asegúrate de que esta ruta sea correcta
 
-const ResolveQuiz = ({ quizId, onBack }) => {
+const ResolveQuiz = ({ quizId, onBack }) => { // Remueve userId como prop
   const [quiz, setQuiz] = useState(null);
   const [responses, setResponses] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -17,6 +17,10 @@ const ResolveQuiz = ({ quizId, onBack }) => {
 
   useEffect(() => {
     const fetchQuiz = async () => {
+      if (!quizId) {
+        console.error('quizId is undefined');
+        return;
+      }
       const docRef = doc(db, 'quizzes', quizId);
       const docSnap = await getDoc(docRef);
 
@@ -99,7 +103,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
     setSelectedOptions(responses[index] || []);
   };
 
-  const calculateResults = () => {
+  const calculateResults = async () => {
     const totalQuestions = quiz.questions.length;
     const scorePercentage = (score / totalQuestions) * 100;
 
@@ -115,6 +119,24 @@ const ResolveQuiz = ({ quizId, onBack }) => {
     }
 
     setResultMessage(message);
+
+    const userId = auth.currentUser ? auth.currentUser.uid : null;
+    if (!userId) {
+      console.error('userId is undefined');
+      return;
+    }
+
+    // Actualizar el mejor resultado del usuario
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      const userData = userSnap.data();
+      const bestScores = userData.bestScores || {};
+      if (!bestScores[quizId] || bestScores[quizId] < scorePercentage) {
+        bestScores[quizId] = scorePercentage;
+        await updateDoc(userRef, { bestScores });
+      }
+    }
   };
 
   const handleReviewAnswers = () => {
