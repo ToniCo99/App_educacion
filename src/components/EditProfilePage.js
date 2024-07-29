@@ -26,6 +26,11 @@ const EditProfilePage = ({ onBack, onProfileUpdate }) => {
   }, []);
 
   const handleSave = async () => {
+    if (name.length > 30) {
+      setError('El nombre no puede exceder los 30 caracteres.');
+      return;
+    }
+
     try {
       const userDocRef = doc(db, 'users', auth.currentUser.uid);
 
@@ -88,6 +93,7 @@ const EditProfilePage = ({ onBack, onProfileUpdate }) => {
           type="text"
           id="name"
           value={name}
+          maxLength={30}
           onChange={(e) => setName(e.target.value)}
         />
       </div>

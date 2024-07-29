@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { db, auth } from '../firebaseConfig';
 import { collection, getDocs, orderBy, query, limit, doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faThumbsUp, faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faThumbsUp, faHeart, faTrophy } from '@fortawesome/free-solid-svg-icons';
+import QuizLeaderboard from './QuizLeaderboard';
 import '../styles/QuizList.css';
 
 const QuizList = ({ onQuizSelect }) => {
@@ -11,6 +12,7 @@ const QuizList = ({ onQuizSelect }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [userId, setUserId] = useState(null);
   const [userFavorites, setUserFavorites] = useState([]);
+  const [selectedQuizId, setSelectedQuizId] = useState(null);
 
   useEffect(() => {
     const fetchQuizzes = async () => {
@@ -244,6 +246,9 @@ const QuizList = ({ onQuizSelect }) => {
               )}
             </div>
             <div className="icons-container" onClick={(e) => e.stopPropagation()}>
+              <div className="icon-wrapper" onClick={() => setSelectedQuizId(quiz.id)}>
+                <FontAwesomeIcon icon={faTrophy} className="icon" />
+              </div>
               <div className="icon-wrapper" onClick={() => handleLike(quiz.id)}>
                 <FontAwesomeIcon
                   icon={faThumbsUp}
@@ -262,6 +267,9 @@ const QuizList = ({ onQuizSelect }) => {
           </li>
         ))}
       </ul>
+      {selectedQuizId && (
+        <QuizLeaderboard quizId={selectedQuizId} onClose={() => setSelectedQuizId(null)} />
+      )}
     </div>
   );
 };
