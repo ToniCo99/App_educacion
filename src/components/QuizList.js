@@ -197,6 +197,24 @@ const QuizList = ({ onQuizSelect }) => {
               : quiz
           )
         );
+      } else {
+        await updateDoc(quizRef, {
+          favorites: arrayRemove(userId),
+        });
+
+        const userRef = doc(db, 'users', userId);
+        await updateDoc(userRef, {
+          quizzes: arrayRemove(quizId),
+        });
+
+        setUserFavorites(prevFavorites => prevFavorites.filter(id => id !== quizId));
+        setQuizzes(prevQuizzes =>
+          prevQuizzes.map(quiz =>
+            quiz.id === quizId
+              ? { ...quiz, favorites: favorites.filter(id => id !== userId) }
+              : quiz
+          )
+        );
       }
     }
   };
