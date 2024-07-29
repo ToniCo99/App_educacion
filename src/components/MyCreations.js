@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebaseConfig';
-import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, deleteDoc, doc, updateDoc, arrayRemove } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShareAlt, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import '../styles/MyCreations.css';
@@ -34,10 +34,31 @@ const MyCreations = ({ userId, onQuizSelect }) => {
 
   const handleDelete = async () => {
     if (quizToDelete) {
-      await deleteDoc(doc(db, 'quizzes', quizToDelete));
-      setCreations(creations.filter(quiz => quiz.id !== quizToDelete));
-      setQuizToDelete(null);
-      setShowConfirm(false);
+      try {
+        // Fetch all users
+        const usersSnapshot = await getDocs(collection(db, 'users'));
+
+        // Remove quiz from all users' favorite lists
+        const userUpdatePromises = usersSnapshot.docs.map(async (userDoc) => {
+          if (userDoc.data().quizzes && userDoc.data().quizzes.includes(quizToDelete)) {
+            await updateDoc(doc(db, 'users', userDoc.id), {
+              quizzes: arrayRemove(quizToDelete),
+            });
+          }
+        });
+
+        await Promise.all(userUpdatePromises);
+
+        // Delete the quiz document
+        await deleteDoc(doc(db, 'quizzes', quizToDelete));
+
+        // Update local state
+        setCreations(creations.filter(quiz => quiz.id !== quizToDelete));
+        setQuizToDelete(null);
+        setShowConfirm(false);
+      } catch (error) {
+        console.error('Error deleting quiz:', error);
+      }
     }
   };
 
