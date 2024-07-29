@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { db, auth } from '../firebaseConfig'; // Importa auth
-import { doc, getDoc, updateDoc } from 'firebase/firestore'; // Importa updateDoc
+import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore'; // Importa updateDoc y arrayUnion
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faThumbsUp, faHeart } from '@fortawesome/free-solid-svg-icons';
 import '../styles/ResolveQuiz.css';
 import KoFiButton from './KoFiButton'; // Asegúrate de que esta ruta sea correcta
 
@@ -14,6 +16,8 @@ const ResolveQuiz = ({ quizId, onBack }) => { // Remueve userId como prop
   const [score, setScore] = useState(0);
   const [resultMessage, setResultMessage] = useState('');
   const [reviewAnswers, setReviewAnswers] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [favorited, setFavorited] = useState(false);
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -33,6 +37,29 @@ const ResolveQuiz = ({ quizId, onBack }) => { // Remueve userId como prop
     };
 
     fetchQuiz();
+  }, [quizId]);
+
+  useEffect(() => {
+    const checkUserInteractions = async () => {
+      const userId = auth.currentUser ? auth.currentUser.uid : null;
+      if (!userId) {
+        console.error('userId is undefined');
+        return;
+      }
+
+      const quizRef = doc(db, 'quizzes', quizId);
+      const quizSnap = await getDoc(quizRef);
+      if (quizSnap.exists()) {
+        const quizData = quizSnap.data();
+        const likes = quizData.likes || [];
+        const favorites = quizData.favorites || [];
+
+        setLiked(likes.includes(userId));
+        setFavorited(favorites.includes(userId));
+      }
+    };
+
+    checkUserInteractions();
   }, [quizId]);
 
   const handleOptionSelect = (oIndex) => {
@@ -146,6 +173,56 @@ const ResolveQuiz = ({ quizId, onBack }) => { // Remueve userId como prop
     setSelectedOptions(responses[0] || []);
   };
 
+  const handleLike = async () => {
+    const userId = auth.currentUser ? auth.currentUser.uid : null;
+    if (!userId) {
+      console.error('userId is undefined');
+      return;
+    }
+
+    const quizRef = doc(db, 'quizzes', quizId);
+    const quizSnap = await getDoc(quizRef);
+    if (quizSnap.exists()) {
+      const quizData = quizSnap.data();
+      const likes = quizData.likes || [];
+
+      if (!likes.includes(userId)) {
+        await updateDoc(quizRef, {
+          likes: arrayUnion(userId),
+        });
+        setLiked(true);
+      }
+    }
+  };
+
+  const handleFavorite = async () => {
+    const userId = auth.currentUser ? auth.currentUser.uid : null;
+    if (!userId) {
+      console.error('userId is undefined');
+      return;
+    }
+
+    const quizRef = doc(db, 'quizzes', quizId);
+    const quizSnap = await getDoc(quizRef);
+    if (quizSnap.exists()) {
+      const quizData = quizSnap.data();
+      const favorites = quizData.favorites || [];
+
+      if (!favorites.includes(userId)) {
+        await updateDoc(quizRef, {
+          favorites: arrayUnion(userId),
+        });
+
+        const userRef = doc(db, 'users', userId);
+        await updateDoc(userRef, {
+          quizzes: arrayUnion(quizId),
+        });
+
+        setFavorited(true);
+      }
+    }
+  };
+
   if (!quiz) {
     return <div>Cargando...</div>;
   }
@@ -158,9 +235,27 @@ const ResolveQuiz = ({ quizId, onBack }) => { // Remueve userId como prop
           <h3>Resultado: {((score / quiz.questions.length) * 100).toFixed(2)}%</h3>
           <p>{resultMessage}</p>
         </div>
-        <button type="button" onClick={onBack} className="back-button">Volver</button>
-        <button type="button" onClick={handleReviewAnswers} className="review-button">Revisar respuestas</button>
+        <div className="button-group">
+          <button type="button" onClick={onBack} className="back-button">Volver</button>
+          <button type="button" onClick={handleReviewAnswers} className="review-button">Revisar respuestas</button>
+        </div>
         <KoFiButton />
+        <div className="like-favorite-container">
+          {!liked && (
+            <div className="icon-container" onClick={handleLike}>
+              <FontAwesomeIcon icon={faThumbsUp} className="like-icon" />
+              <p className="cta-message">¿Te gustó el quiz? ¡Dale Like!</p>
+            </div>
+          )}
+          {liked && <p className="liked-message">¡Ya diste like al cuestionario!</p>}
+          {!favorited && (
+            <div className="icon-container" onClick={handleFavorite}>
+              <FontAwesomeIcon icon={faHeart} className="favorite-icon" />
+              <p className="cta-message">¿Quieres guardarlo? ¡Añádelo a favoritos!</p>
+            </div>
+          )}
+          {favorited && <p className="liked-message">¡Añadido a tus favoritos!</p>}
+        </div>
       </div>
     );
   }

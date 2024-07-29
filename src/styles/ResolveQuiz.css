@@ -129,4 +129,44 @@
   height: auto;
 }
 
-/* Resto del CSS */
+.like-favorite-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.icon-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.like-icon, .favorite-icon {
+  font-size: 2em;
+  color: #6BBF59;
+  transition: transform 0.2s;
+}
+
+.like-icon:hover, .favorite-icon:hover {
+  transform: scale(1.2);
+}
+
+.cta-message {
+  margin-left: 10px;
+  font-size: 1.2em;
+  color: #6BBF59;
+}
+
+.liked-message {
+  font-size: 1.2em;
+  color: #6BBF59;
+  margin-top: 20px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
