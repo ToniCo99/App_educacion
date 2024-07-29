@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { db, auth } from '../firebaseConfig'; // Importa auth
-import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore'; // Importa updateDoc y arrayUnion
+import { db, auth } from '../firebaseConfig';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faHeart } from '@fortawesome/free-solid-svg-icons';
 import '../styles/ResolveQuiz.css';
-import KoFiButton from './KoFiButton'; // Asegúrate de que esta ruta sea correcta
+import KoFiButton from './KoFiButton';
 
-const ResolveQuiz = ({ quizId, onBack }) => { // Remueve userId como prop
+const ResolveQuiz = ({ quizId, onBack }) => {
   const [quiz, setQuiz] = useState(null);
   const [responses, setResponses] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -95,7 +95,7 @@ const ResolveQuiz = ({ quizId, onBack }) => { // Remueve userId como prop
       }
 
       if (isCorrect) {
-        setScore(score + 1);
+        setScore(prevScore => prevScore + 1);
       }
 
       setIsAnswered(true);
@@ -107,7 +107,7 @@ const ResolveQuiz = ({ quizId, onBack }) => { // Remueve userId como prop
 
       const nextUnansweredQuestion = newResponses.findIndex(response => response === null);
       if (nextUnansweredQuestion === -1) {
-        calculateResults();
+        calculateResults(newResponses);
         setShowResults(true);
       }
     }
@@ -130,9 +130,27 @@ const ResolveQuiz = ({ quizId, onBack }) => { // Remueve userId como prop
     setSelectedOptions(responses[index] || []);
   };
 
-  const calculateResults = async () => {
+  const calculateResults = async (finalResponses) => {
     const totalQuestions = quiz.questions.length;
-    const scorePercentage = (score / totalQuestions) * 100;
+    const correctAnswers = finalResponses.reduce((acc, response, index) => {
+      if (response === null) return acc;
+
+      const question = quiz.questions[index];
+
+      if (question.isMultipleChoice) {
+        if (response.slice().sort().toString() === question.correctOption.slice().sort().toString()) {
+          return acc + 1;
+        }
+      } else {
+        if (response[0] === question.correctOption) {
+          return acc + 1;
+        }
+      }
+
+      return acc;
+    }, 0);
+
+    const scorePercentage = (correctAnswers / totalQuestions) * 100;
 
     let message = '';
     if (scorePercentage < 25) {
@@ -162,6 +180,18 @@ const ResolveQuiz = ({ quizId, onBack }) => { // Remueve userId como prop
       if (!bestScores[quizId] || bestScores[quizId] < scorePercentage) {
         bestScores[quizId] = scorePercentage;
         await updateDoc(userRef, { bestScores });
+      }
+    }
+
+    // Actualizar el mejor resultado del usuario en el documento del quiz
+    const quizRef = doc(db, 'quizzes', quizId);
+    const quizSnap = await getDoc(quizRef);
+    if (quizSnap.exists()) {
+      const quizData = quizSnap.data();
+      const userBestScores = quizData.userBestScores || {};
+      if (!userBestScores[userId] || userBestScores[userId] < scorePercentage) {
+        userBestScores[userId] = scorePercentage;
+        await updateDoc(quizRef, { userBestScores });
       }
     }
   };
@@ -219,6 +249,17 @@ const ResolveQuiz = ({ quizId, onBack }) => { // Remueve userId como prop
         });
 
         setFavorited(true);
+      } else {
+        await updateDoc(quizRef, {
+          favorites: arrayRemove(userId),
+        });
+
+        const userRef = doc(db, 'users', userId);
+        await updateDoc(userRef, {
+          quizzes: arrayRemove(quizId),
+        });
+
+        setFavorited(false);
       }
     }
   };
