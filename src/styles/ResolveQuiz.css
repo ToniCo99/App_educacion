@@ -106,9 +106,6 @@
   background-color: #ddd;
 }
 
-/* ResolveQuiz.css */
-
-
 .answered-correct {
   background-color: #6BBF59; /* Verde */
 }
@@ -215,5 +212,35 @@
 
   .podium-place {
     margin-bottom: 20px;
+  }
+}
+
+.user-score {
+  font-weight: bold;
+  color: #28a745;
+  animation: highlight 1s ease-in-out infinite alternate;
+}
+
+.user-time {
+  font-weight: bold;
+  color: #17a2b8;
+  animation: highlight-time 1s ease-in-out infinite alternate;
+}
+
+@keyframes highlight {
+  from {
+    color: #28a745;
+  }
+  to {
+    color: #218838;
+  }
+}
+
+@keyframes highlight-time {
+  from {
+    color: #17a2b8;
+  }
+  to {
+    color: #138496;
   }
 }

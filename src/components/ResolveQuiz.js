@@ -323,6 +323,15 @@ const ResolveQuiz = ({ quizId, onBack }) => {
     };
   }, [selectedOptions, isAnswered]);
 
+  const formatTime = (timeInSeconds) => {
+    if (timeInSeconds < 60) {
+      return `${Math.floor(timeInSeconds)} sec`;
+    }
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = Math.floor(timeInSeconds % 60);
+    return `${minutes} min ${seconds < 10 ? '0' : ''}${seconds} sec`;
+  };
+
   if (!quiz) {
     return <div>Cargando...</div>;
   }
@@ -332,9 +341,9 @@ const ResolveQuiz = ({ quizId, onBack }) => {
       <div className="container resolve-quiz-container">
         <h1>{quiz.title}</h1>
         <div className="result">
-          <h3>Resultado: {((score / quiz.questions.length) * 100).toFixed(2)}%</h3>
+          <h3>Resultado: <span className="user-score">{((score / quiz.questions.length) * 100).toFixed(2)}%</span></h3>
           <p>{resultMessage}</p>
-          <p>Tiempo: {timeTaken.toFixed(2)} segundos</p> {/* Mostrar el tiempo tomado */}
+          <p>Tiempo: <span className="user-time">{formatTime(timeTaken)}</span></p> {/* Mostrar el tiempo tomado */}
         </div>
         <div className="podium">
           <div className="podium-place">
@@ -343,8 +352,8 @@ const ResolveQuiz = ({ quizId, onBack }) => {
               <>
                 <img src={topUsers[0].photoURL} alt="User" className="user-icon" />
                 <p>{topUsers[0].name}</p>
-                <p>{topUsers[0].score.toFixed(2)}%</p>
-                <p>{typeof topUsers[0].time === 'number' ? `${topUsers[0].time.toFixed(2)} segundos` : topUsers[0].time}</p> {/* Mostrar el tiempo del top user */}
+                <p className="user-score">{topUsers[0].score.toFixed(2)}%</p>
+                <p className="user-time">{typeof topUsers[0].time === 'number' ? formatTime(topUsers[0].time) : topUsers[0].time}</p> {/* Mostrar el tiempo del top user */}
               </>
             ) : (
               <>
@@ -359,8 +368,8 @@ const ResolveQuiz = ({ quizId, onBack }) => {
               <>
                 <img src={topUsers[1].photoURL} alt="User" className="user-icon" />
                 <p>{topUsers[1].name}</p>
-                <p>{topUsers[1].score.toFixed(2)}%</p>
-                <p>{typeof topUsers[1].time === 'number' ? `${topUsers[1].time.toFixed(2)} segundos` : topUsers[1].time}</p> {/* Mostrar el tiempo del top user */}
+                <p className="user-score">{topUsers[1].score.toFixed(2)}%</p>
+                <p className="user-time">{typeof topUsers[1].time === 'number' ? formatTime(topUsers[1].time) : topUsers[1].time}</p> {/* Mostrar el tiempo del top user */}
               </>
             ) : (
               <>
@@ -375,8 +384,8 @@ const ResolveQuiz = ({ quizId, onBack }) => {
               <>
                 <img src={topUsers[2].photoURL} alt="User" className="user-icon" />
                 <p>{topUsers[2].name}</p>
-                <p>{topUsers[2].score.toFixed(2)}%</p>
-                <p>{typeof topUsers[2].time === 'number' ? `${topUsers[2].time.toFixed(2)} segundos` : topUsers[2].time}</p> {/* Mostrar el tiempo del top user */}
+                <p className="user-score">{topUsers[2].score.toFixed(2)}%</p>
+                <p className="user-time">{typeof topUsers[2].time === 'number' ? formatTime(topUsers[2].time) : topUsers[2].time}</p> {/* Mostrar el tiempo del top user */}
               </>
             ) : (
               <>
