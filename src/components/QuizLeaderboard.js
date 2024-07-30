@@ -15,6 +15,7 @@ const QuizLeaderboard = ({ quizId, onClose }) => {
       if (quizSnap.exists()) {
         const quizData = quizSnap.data();
         const userBestScores = quizData.userBestScores || {};
+        const userBestTimes = quizData.userBestTimes || {};
 
         const sortedBestScores = Object.entries(userBestScores)
           .sort(([, a], [, b]) => b - a)
@@ -23,7 +24,8 @@ const QuizLeaderboard = ({ quizId, onClose }) => {
         const topUsersData = await Promise.all(
           sortedBestScores.map(async ([uid, score]) => {
             const userDoc = await getDoc(doc(db, 'users', uid));
-            return userDoc.exists() ? { uid, score, ...userDoc.data() } : null;
+            const time = userBestTimes[uid] !== undefined ? userBestTimes[uid] : '--:--'; // Default time
+            return userDoc.exists() ? { uid, score, time, ...userDoc.data() } : null;
           })
         );
 
@@ -56,6 +58,7 @@ const QuizLeaderboard = ({ quizId, onClose }) => {
                 <img src={user.photoURL} alt="User" className="user-icon" />
                 <p>{user.name}</p>
                 <p>{user.score.toFixed(2)}%</p>
+                <p>{typeof user.time === 'number' ? `${user.time.toFixed(2)} segundos` : user.time}</p> {/* Mostrar el tiempo del usuario */}
               </>
             ) : (
               <>

@@ -19,6 +19,8 @@ const ResolveQuiz = ({ quizId, onBack }) => {
   const [liked, setLiked] = useState(false);
   const [favorited, setFavorited] = useState(false);
   const [topUsers, setTopUsers] = useState([]);
+  const [startTime, setStartTime] = useState(null);
+  const [timeTaken, setTimeTaken] = useState(0);
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -32,6 +34,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
       if (docSnap.exists()) {
         setQuiz(docSnap.data());
         setResponses(new Array(docSnap.data().questions.length).fill(null));
+        setStartTime(Date.now()); // Start the timer when the quiz is loaded
       } else {
         console.log('No such document!');
       }
@@ -152,6 +155,9 @@ const ResolveQuiz = ({ quizId, onBack }) => {
     }, 0);
 
     const scorePercentage = (correctAnswers / totalQuestions) * 100;
+    const timeTaken = (Date.now() - startTime) / 1000; // Calculate the time taken in seconds
+
+    setTimeTaken(timeTaken);
 
     let message = '';
     if (scorePercentage < 25) {
@@ -178,9 +184,14 @@ const ResolveQuiz = ({ quizId, onBack }) => {
     if (userSnap.exists()) {
       const userData = userSnap.data();
       const bestScores = userData.bestScores || {};
+      const bestTimes = userData.bestTimes || {};
       if (!bestScores[quizId] || bestScores[quizId] < scorePercentage) {
         bestScores[quizId] = scorePercentage;
-        await updateDoc(userRef, { bestScores });
+        bestTimes[quizId] = timeTaken;
+        await updateDoc(userRef, { bestScores, bestTimes });
+      } else if (bestScores[quizId] === scorePercentage && bestTimes[quizId] > timeTaken) {
+        bestTimes[quizId] = timeTaken;
+        await updateDoc(userRef, { bestTimes });
       }
     }
 
@@ -190,21 +201,27 @@ const ResolveQuiz = ({ quizId, onBack }) => {
     if (quizSnap.exists()) {
       const quizData = quizSnap.data();
       const userBestScores = quizData.userBestScores || {};
+      const userBestTimes = quizData.userBestTimes || {};
       if (!userBestScores[userId] || userBestScores[userId] < scorePercentage) {
         userBestScores[userId] = scorePercentage;
-        await updateDoc(quizRef, { userBestScores });
+        userBestTimes[userId] = timeTaken;
+        await updateDoc(quizRef, { userBestScores, userBestTimes });
+      } else if (userBestScores[userId] === scorePercentage && userBestTimes[userId] > timeTaken) {
+        userBestTimes[userId] = timeTaken;
+        await updateDoc(quizRef, { userBestTimes });
       }
-      
+
       // Obtener y ordenar las mejores puntuaciones
       const sortedBestScores = Object.entries(userBestScores)
-        .sort(([, a], [, b]) => b - a)
+        .map(([uid, score]) => ({ uid, score, time: userBestTimes[uid] !== undefined ? userBestTimes[uid] : Infinity }))
+        .sort((a, b) => b.score - a.score || a.time - b.time)
         .slice(0, 3);
-      
+
       // Obtener datos de usuario para el podio
       const topUsersData = await Promise.all(
-        sortedBestScores.map(async ([uid, score]) => {
+        sortedBestScores.map(async ({ uid, score, time }) => {
           const userDoc = await getDoc(doc(db, 'users', uid));
-          return userDoc.exists() ? { uid, score, ...userDoc.data() } : null;
+          return userDoc.exists() ? { uid, score, ...userDoc.data(), time: time === Infinity ? '--:--' : time } : null;
         })
       );
 
@@ -296,6 +313,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
         <div className="result">
           <h3>Resultado: {((score / quiz.questions.length) * 100).toFixed(2)}%</h3>
           <p>{resultMessage}</p>
+          <p>Tiempo: {timeTaken.toFixed(2)} segundos</p> {/* Mostrar el tiempo tomado */}
         </div>
         <div className="podium">
           <div className="podium-place">
@@ -305,6 +323,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
                 <img src={topUsers[0].photoURL} alt="User" className="user-icon" />
                 <p>{topUsers[0].name}</p>
                 <p>{topUsers[0].score.toFixed(2)}%</p>
+                <p>{typeof topUsers[0].time === 'number' ? `${topUsers[0].time.toFixed(2)} segundos` : topUsers[0].time}</p> {/* Mostrar el tiempo del top user */}
               </>
             ) : (
               <>
@@ -320,6 +339,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
                 <img src={topUsers[1].photoURL} alt="User" className="user-icon" />
                 <p>{topUsers[1].name}</p>
                 <p>{topUsers[1].score.toFixed(2)}%</p>
+                <p>{typeof topUsers[1].time === 'number' ? `${topUsers[1].time.toFixed(2)} segundos` : topUsers[1].time}</p> {/* Mostrar el tiempo del top user */}
               </>
             ) : (
               <>
@@ -335,6 +355,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
                 <img src={topUsers[2].photoURL} alt="User" className="user-icon" />
                 <p>{topUsers[2].name}</p>
                 <p>{topUsers[2].score.toFixed(2)}%</p>
+                <p>{typeof topUsers[2].time === 'number' ? `${topUsers[2].time.toFixed(2)} segundos` : topUsers[2].time}</p> {/* Mostrar el tiempo del top user */}
               </>
             ) : (
               <>
