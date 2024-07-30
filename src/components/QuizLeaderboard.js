@@ -40,6 +40,22 @@ const QuizLeaderboard = ({ quizId, onClose }) => {
     fetchLeaderboard();
   }, [quizId]);
 
+  const formatTime = (timeInSeconds) => {
+    if (timeInSeconds < 60) {
+      return `${Math.floor(timeInSeconds)} sec`;
+    }
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = Math.floor(timeInSeconds % 60);
+    return `${minutes} min ${seconds < 10 ? '0' : ''}${seconds} sec`;
+  };
+
+  const truncateName = (name) => {
+    if (name.length > 15) {
+      return `${name.substring(0, 15)}...`;
+    }
+    return name;
+  };
+
   return (
     <div className="leaderboard-container">
       <div className="leaderboard-header">
@@ -56,9 +72,9 @@ const QuizLeaderboard = ({ quizId, onClose }) => {
             {user ? (
               <>
                 <img src={user.photoURL} alt="User" className="user-icon" />
-                <p>{user.name}</p>
-                <p>{user.score.toFixed(2)}%</p>
-                <p>{typeof user.time === 'number' ? `${user.time.toFixed(2)} segundos` : user.time}</p> {/* Mostrar el tiempo del usuario */}
+                <p>{truncateName(user.name)}</p>
+                <p className="user-score">{user.score.toFixed(2)}%</p>
+                <p className="user-time">{typeof user.time === 'number' ? formatTime(user.time) : user.time}</p> {/* Mostrar el tiempo del usuario */}
               </>
             ) : (
               <>
