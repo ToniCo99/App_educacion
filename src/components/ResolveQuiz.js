@@ -189,7 +189,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
         bestScores[quizId] = scorePercentage;
         bestTimes[quizId] = timeTaken;
         await updateDoc(userRef, { bestScores, bestTimes });
-      } else if (bestScores[quizId] === scorePercentage && bestTimes[quizId] > timeTaken) {
+      } else if (bestScores[quizId] === scorePercentage && (bestTimes[quizId] === undefined || bestTimes[quizId] > timeTaken)) {
         bestTimes[quizId] = timeTaken;
         await updateDoc(userRef, { bestTimes });
       }
@@ -206,7 +206,7 @@ const ResolveQuiz = ({ quizId, onBack }) => {
         userBestScores[userId] = scorePercentage;
         userBestTimes[userId] = timeTaken;
         await updateDoc(quizRef, { userBestScores, userBestTimes });
-      } else if (userBestScores[userId] === scorePercentage && userBestTimes[userId] > timeTaken) {
+      } else if (userBestScores[userId] === scorePercentage && (userBestTimes[userId] === undefined || userBestTimes[userId] > timeTaken)) {
         userBestTimes[userId] = timeTaken;
         await updateDoc(quizRef, { userBestTimes });
       }
