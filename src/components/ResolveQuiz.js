@@ -302,6 +302,27 @@ const ResolveQuiz = ({ quizId, onBack }) => {
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key >= '1' && event.key <= '4') {
+        handleOptionSelect(parseInt(event.key, 10) - 1);
+      } else if (event.key === 'Enter') {
+        if (isAnswered) {
+          handleNextQuestion();
+        } else if (selectedOptions.length > 0) {
+          handleSubmitAnswer();
+        }
+      } else if (event.key === 'Escape') {
+        onBack();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedOptions, isAnswered]);
+
   if (!quiz) {
     return <div>Cargando...</div>;
   }
