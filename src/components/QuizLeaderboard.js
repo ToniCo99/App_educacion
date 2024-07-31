@@ -18,7 +18,12 @@ const QuizLeaderboard = ({ quizId, onClose }) => {
         const userBestTimes = quizData.userBestTimes || {};
 
         const sortedBestScores = Object.entries(userBestScores)
-          .sort(([, a], [, b]) => b - a)
+          .sort(([uidA, scoreA], [uidB, scoreB]) => {
+            if (scoreB === scoreA) {
+              return (userBestTimes[uidA] || Infinity) - (userBestTimes[uidB] || Infinity);
+            }
+            return scoreB - scoreA;
+          })
           .slice(0, 5);
 
         const topUsersData = await Promise.all(
